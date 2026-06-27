@@ -1,0 +1,194 @@
+================================================================================
+APPROACH 1 (GERMAN): LIWC REGRESSION, MAE AS OPTIMIZATION GOAL
+================================================================================
+Input CSV:   D:\aaa_Desktop\Thesis\tcc_thesis\data\data_clean\02_results_liwc_dict\LIWC-22 Results - full_dataset_de - LIWC Analysis.csv
+Results dir: D:\aaa_Desktop\Thesis\tcc_thesis\results\approach1\de_results\mae_as_goal
+Target:      average_score
+Scoring:     neg_mean_absolute_error
+Dimensions:  ['d1_illness_beliefs', 'd2_lack_of_knowledge', 'd3_cultural_factors', 'd4_family_system', 'd5_ambiguity_tolerance']
+
+================================================================================
+DIMENSION: d1_illness_beliefs
+================================================================================
+Rows after target filtering: 233
+X shape: (233, 98)
+y mean=2.298, std=0.792, min=0.000, max=4.000
+Completed outputs found for d1_illness_beliefs; skipping training and reusing exported files.
+
+================================================================================
+DIMENSION: d2_lack_of_knowledge
+================================================================================
+Rows after target filtering: 225
+X shape: (225, 98)
+y mean=2.413, std=0.941, min=0.000, max=4.000
+Completed outputs found for d2_lack_of_knowledge; skipping training and reusing exported files.
+
+================================================================================
+DIMENSION: d3_cultural_factors
+================================================================================
+Rows after target filtering: 231
+X shape: (231, 98)
+y mean=2.156, std=1.088, min=0.000, max=4.000
+Completed outputs found for d3_cultural_factors; skipping training and reusing exported files.
+
+================================================================================
+DIMENSION: d4_family_system
+================================================================================
+Rows after target filtering: 224
+X shape: (224, 98)
+y mean=2.845, std=0.758, min=0.667, max=4.000
+Completed outputs found for d4_family_system; skipping training and reusing exported files.
+
+================================================================================
+DIMENSION: d5_ambiguity_tolerance
+================================================================================
+Rows after target filtering: 227
+X shape: (227, 98)
+y mean=2.893, std=0.827, min=0.000, max=4.000
+Loaded checkpoint (104 combinations already fitted): D:\aaa_Desktop\Thesis\tcc_thesis\results\approach1\de_results\mae_as_goal\permuters\permuter_d5_ambiguity_tolerance.pkl
+Pipeline Combinations:   0%|          | 0/108 [00:00<?, ?it/s]Skipping (('imputer', 'Median'), ('scaler', 'Standard'), ('reduce_dim', 'SelectKBest'), ('reg', 'Baseline')) since this combination was already fitted!
+Skipping (('imputer', 'Median'), ('scaler', 'Standard'), ('reduce_dim', 'SelectKBest'), ('reg', 'Ridge')) since this combination was already fitted!
+Pipeline Combinations:   2%|▏         | 2/108 [00:00<00:08, 12.31it/s]Skipping (('imputer', 'Median'), ('scaler', 'Standard'), ('reduce_dim', 'SelectKBest'), ('reg', 'Lasso')) since this combination was already fitted!
+Skipping (('imputer', 'Median'), ('scaler', 'Standard'), ('reduce_dim', 'SelectKBest'), ('reg', 'ElasticNet')) since this combination was already fitted!
+Pipeline Combinations:   4%|▎         | 4/108 [00:00<00:10,  9.95it/s]Skipping (('imputer', 'Median'), ('scaler', 'Standard'), ('reduce_dim', 'SelectKBest'), ('reg', 'BayesianRidge')) since this combination was already fitted!
+Skipping (('imputer', 'Median'), ('scaler', 'Standard'), ('reduce_dim', 'SelectKBest'), ('reg', 'SVR_Linear')) since this combination was already fitted!
+Pipeline Combinations:   6%|▌         | 6/108 [00:00<00:10,  9.94it/s]Skipping (('imputer', 'Median'), ('scaler', 'Standard'), ('reduce_dim', 'SelectKBest'), ('reg', 'SVR_RBF')) since this combination was already fitted!
+Skipping (('imputer', 'Median'), ('scaler', 'Standard'), ('reduce_dim', 'SelectKBest'), ('reg', 'HistGradBoost')) since this combination was already fitted!
+Pipeline Combinations:   7%|▋         | 8/108 [00:00<00:12,  8.32it/s]Skipping (('imputer', 'Median'), ('scaler', 'Standard'), ('reduce_dim', 'SelectKBest'), ('reg', 'RandomForest')) since this combination was already fitted!
+Pipeline Combinations:   8%|▊         | 9/108 [00:01<00:12,  7.96it/s]Skipping (('imputer', 'Median'), ('scaler', 'Standard'), ('reduce_dim', 'SelectKBest'), ('reg', 'GradientBoosting')) since this combination was already fitted!
+Pipeline Combinations:   9%|▉         | 10/108 [00:01<00:13,  7.10it/s]Skipping (('imputer', 'Median'), ('scaler', 'Standard'), ('reduce_dim', 'SelectKBest'), ('reg', 'KNN')) since this combination was already fitted!
+Pipeline Combinations:  10%|█         | 11/108 [00:01<00:13,  7.07it/s]Skipping (('imputer', 'Median'), ('scaler', 'Standard'), ('reduce_dim', 'SelectKBest'), ('reg', 'DecisionTree')) since this combination was already fitted!
+Pipeline Combinations:  11%|█         | 12/108 [00:01<00:12,  7.40it/s]Skipping (('imputer', 'Median'), ('scaler', 'Standard'), ('reduce_dim', 'RFE'), ('reg', 'Baseline')) since this combination was already fitted!
+Pipeline Combinations:  12%|█▏        | 13/108 [00:01<00:12,  7.59it/s]Skipping (('imputer', 'Median'), ('scaler', 'Standard'), ('reduce_dim', 'RFE'), ('reg', 'Ridge')) since this combination was already fitted!
+Pipeline Combinations:  13%|█▎        | 14/108 [00:01<00:13,  6.98it/s]Skipping (('imputer', 'Median'), ('scaler', 'Standard'), ('reduce_dim', 'RFE'), ('reg', 'Lasso')) since this combination was already fitted!
+Pipeline Combinations:  14%|█▍        | 15/108 [00:01<00:13,  6.83it/s]Skipping (('imputer', 'Median'), ('scaler', 'Standard'), ('reduce_dim', 'RFE'), ('reg', 'ElasticNet')) since this combination was already fitted!
+Pipeline Combinations:  15%|█▍        | 16/108 [00:02<00:12,  7.17it/s]Skipping (('imputer', 'Median'), ('scaler', 'Standard'), ('reduce_dim', 'RFE'), ('reg', 'BayesianRidge')) since this combination was already fitted!
+Pipeline Combinations:  16%|█▌        | 17/108 [00:02<00:13,  6.80it/s]Skipping (('imputer', 'Median'), ('scaler', 'Standard'), ('reduce_dim', 'RFE'), ('reg', 'SVR_Linear')) since this combination was already fitted!
+Pipeline Combinations:  17%|█▋        | 18/108 [00:02<00:13,  6.64it/s]Skipping (('imputer', 'Median'), ('scaler', 'Standard'), ('reduce_dim', 'RFE'), ('reg', 'SVR_RBF')) since this combination was already fitted!
+Pipeline Combinations:  18%|█▊        | 19/108 [00:02<00:12,  7.13it/s]Skipping (('imputer', 'Median'), ('scaler', 'Standard'), ('reduce_dim', 'RFE'), ('reg', 'HistGradBoost')) since this combination was already fitted!
+Pipeline Combinations:  19%|█▊        | 20/108 [00:02<00:11,  7.55it/s]Skipping (('imputer', 'Median'), ('scaler', 'Standard'), ('reduce_dim', 'RFE'), ('reg', 'RandomForest')) since this combination was already fitted!
+Pipeline Combinations:  19%|█▉        | 21/108 [00:02<00:10,  7.91it/s]Skipping (('imputer', 'Median'), ('scaler', 'Standard'), ('reduce_dim', 'RFE'), ('reg', 'GradientBoosting')) since this combination was already fitted!
+Pipeline Combinations:  20%|██        | 22/108 [00:02<00:10,  7.90it/s]Skipping (('imputer', 'Median'), ('scaler', 'Standard'), ('reduce_dim', 'RFE'), ('reg', 'KNN')) since this combination was already fitted!
+Pipeline Combinations:  21%|██▏       | 23/108 [00:02<00:10,  7.76it/s]Skipping (('imputer', 'Median'), ('scaler', 'Standard'), ('reduce_dim', 'RFE'), ('reg', 'DecisionTree')) since this combination was already fitted!
+Pipeline Combinations:  22%|██▏       | 24/108 [00:03<00:10,  7.89it/s]Skipping (('imputer', 'Median'), ('scaler', 'Standard'), ('reduce_dim', 'passthrough'), ('reg', 'Baseline')) since this combination was already fitted!
+Pipeline Combinations:  23%|██▎       | 25/108 [00:03<00:10,  8.12it/s]Skipping (('imputer', 'Median'), ('scaler', 'Standard'), ('reduce_dim', 'passthrough'), ('reg', 'Ridge')) since this combination was already fitted!
+Pipeline Combinations:  24%|██▍       | 26/108 [00:03<00:11,  6.97it/s]Skipping (('imputer', 'Median'), ('scaler', 'Standard'), ('reduce_dim', 'passthrough'), ('reg', 'Lasso')) since this combination was already fitted!
+Pipeline Combinations:  25%|██▌       | 27/108 [00:03<00:13,  6.19it/s]Skipping (('imputer', 'Median'), ('scaler', 'Standard'), ('reduce_dim', 'passthrough'), ('reg', 'ElasticNet')) since this combination was already fitted!
+Pipeline Combinations:  26%|██▌       | 28/108 [00:03<00:12,  6.22it/s]Skipping (('imputer', 'Median'), ('scaler', 'Standard'), ('reduce_dim', 'passthrough'), ('reg', 'BayesianRidge')) since this combination was already fitted!
+Pipeline Combinations:  27%|██▋       | 29/108 [00:03<00:13,  6.01it/s]Skipping (('imputer', 'Median'), ('scaler', 'Standard'), ('reduce_dim', 'passthrough'), ('reg', 'SVR_Linear')) since this combination was already fitted!
+Pipeline Combinations:  28%|██▊       | 30/108 [00:04<00:12,  6.14it/s]Skipping (('imputer', 'Median'), ('scaler', 'Standard'), ('reduce_dim', 'passthrough'), ('reg', 'SVR_RBF')) since this combination was already fitted!
+Pipeline Combinations:  29%|██▊       | 31/108 [00:04<00:13,  5.90it/s]Skipping (('imputer', 'Median'), ('scaler', 'Standard'), ('reduce_dim', 'passthrough'), ('reg', 'HistGradBoost')) since this combination was already fitted!
+Pipeline Combinations:  30%|██▉       | 32/108 [00:04<00:12,  6.11it/s]Skipping (('imputer', 'Median'), ('scaler', 'Standard'), ('reduce_dim', 'passthrough'), ('reg', 'RandomForest')) since this combination was already fitted!
+Pipeline Combinations:  31%|███       | 33/108 [00:04<00:13,  5.64it/s]Skipping (('imputer', 'Median'), ('scaler', 'Standard'), ('reduce_dim', 'passthrough'), ('reg', 'GradientBoosting')) since this combination was already fitted!
+Pipeline Combinations:  31%|███▏      | 34/108 [00:04<00:13,  5.55it/s]Skipping (('imputer', 'Median'), ('scaler', 'Standard'), ('reduce_dim', 'passthrough'), ('reg', 'KNN')) since this combination was already fitted!
+Pipeline Combinations:  32%|███▏      | 35/108 [00:05<00:17,  4.19it/s]Skipping (('imputer', 'Median'), ('scaler', 'Standard'), ('reduce_dim', 'passthrough'), ('reg', 'DecisionTree')) since this combination was already fitted!
+Pipeline Combinations:  33%|███▎      | 36/108 [00:05<00:16,  4.50it/s]Skipping (('imputer', 'Median'), ('scaler', 'Robust'), ('reduce_dim', 'SelectKBest'), ('reg', 'Baseline')) since this combination was already fitted!
+Pipeline Combinations:  34%|███▍      | 37/108 [00:05<00:14,  4.96it/s]Skipping (('imputer', 'Median'), ('scaler', 'Robust'), ('reduce_dim', 'SelectKBest'), ('reg', 'Ridge')) since this combination was already fitted!
+Pipeline Combinations:  35%|███▌      | 38/108 [00:05<00:13,  5.27it/s]Skipping (('imputer', 'Median'), ('scaler', 'Robust'), ('reduce_dim', 'SelectKBest'), ('reg', 'Lasso')) since this combination was already fitted!
+Pipeline Combinations:  36%|███▌      | 39/108 [00:05<00:12,  5.36it/s]Skipping (('imputer', 'Median'), ('scaler', 'Robust'), ('reduce_dim', 'SelectKBest'), ('reg', 'ElasticNet')) since this combination was already fitted!
+Pipeline Combinations:  37%|███▋      | 40/108 [00:06<00:12,  5.61it/s]Skipping (('imputer', 'Median'), ('scaler', 'Robust'), ('reduce_dim', 'SelectKBest'), ('reg', 'BayesianRidge')) since this combination was already fitted!
+Pipeline Combinations:  38%|███▊      | 41/108 [00:06<00:10,  6.15it/s]Skipping (('imputer', 'Median'), ('scaler', 'Robust'), ('reduce_dim', 'SelectKBest'), ('reg', 'SVR_Linear')) since this combination was already fitted!
+Skipping (('imputer', 'Median'), ('scaler', 'Robust'), ('reduce_dim', 'SelectKBest'), ('reg', 'SVR_RBF')) since this combination was already fitted!
+Pipeline Combinations:  40%|███▉      | 43/108 [00:06<00:07,  8.80it/s]Skipping (('imputer', 'Median'), ('scaler', 'Robust'), ('reduce_dim', 'SelectKBest'), ('reg', 'HistGradBoost')) since this combination was already fitted!
+Skipping (('imputer', 'Median'), ('scaler', 'Robust'), ('reduce_dim', 'SelectKBest'), ('reg', 'RandomForest')) since this combination was already fitted!
+Pipeline Combinations:  42%|████▏     | 45/108 [00:06<00:06,  9.54it/s]Skipping (('imputer', 'Median'), ('scaler', 'Robust'), ('reduce_dim', 'SelectKBest'), ('reg', 'GradientBoosting')) since this combination was already fitted!
+Skipping (('imputer', 'Median'), ('scaler', 'Robust'), ('reduce_dim', 'SelectKBest'), ('reg', 'KNN')) since this combination was already fitted!
+Pipeline Combinations:  44%|████▎     | 47/108 [00:06<00:05, 11.16it/s]Skipping (('imputer', 'Median'), ('scaler', 'Robust'), ('reduce_dim', 'SelectKBest'), ('reg', 'DecisionTree')) since this combination was already fitted!
+Skipping (('imputer', 'Median'), ('scaler', 'Robust'), ('reduce_dim', 'RFE'), ('reg', 'Baseline')) since this combination was already fitted!
+Skipping (('imputer', 'Median'), ('scaler', 'Robust'), ('reduce_dim', 'RFE'), ('reg', 'Ridge')) since this combination was already fitted!
+Pipeline Combinations:  46%|████▋     | 50/108 [00:06<00:04, 13.94it/s]Skipping (('imputer', 'Median'), ('scaler', 'Robust'), ('reduce_dim', 'RFE'), ('reg', 'Lasso')) since this combination was already fitted!
+Skipping (('imputer', 'Median'), ('scaler', 'Robust'), ('reduce_dim', 'RFE'), ('reg', 'ElasticNet')) since this combination was already fitted!
+Pipeline Combinations:  48%|████▊     | 52/108 [00:06<00:03, 15.17it/s]Skipping (('imputer', 'Median'), ('scaler', 'Robust'), ('reduce_dim', 'RFE'), ('reg', 'BayesianRidge')) since this combination was already fitted!
+Skipping (('imputer', 'Median'), ('scaler', 'Robust'), ('reduce_dim', 'RFE'), ('reg', 'SVR_Linear')) since this combination was already fitted!
+Pipeline Combinations:  50%|█████     | 54/108 [00:06<00:03, 15.47it/s]Skipping (('imputer', 'Median'), ('scaler', 'Robust'), ('reduce_dim', 'RFE'), ('reg', 'SVR_RBF')) since this combination was already fitted!
+Skipping (('imputer', 'Median'), ('scaler', 'Robust'), ('reduce_dim', 'RFE'), ('reg', 'HistGradBoost')) since this combination was already fitted!
+Pipeline Combinations:  52%|█████▏    | 56/108 [00:07<00:03, 15.24it/s]Skipping (('imputer', 'Median'), ('scaler', 'Robust'), ('reduce_dim', 'RFE'), ('reg', 'RandomForest')) since this combination was already fitted!
+Skipping (('imputer', 'Median'), ('scaler', 'Robust'), ('reduce_dim', 'RFE'), ('reg', 'GradientBoosting')) since this combination was already fitted!
+Pipeline Combinations:  54%|█████▎    | 58/108 [00:07<00:03, 13.83it/s]Skipping (('imputer', 'Median'), ('scaler', 'Robust'), ('reduce_dim', 'RFE'), ('reg', 'KNN')) since this combination was already fitted!
+Skipping (('imputer', 'Median'), ('scaler', 'Robust'), ('reduce_dim', 'RFE'), ('reg', 'DecisionTree')) since this combination was already fitted!
+Pipeline Combinations:  56%|█████▌    | 60/108 [00:07<00:03, 14.30it/s]Skipping (('imputer', 'Median'), ('scaler', 'Robust'), ('reduce_dim', 'passthrough'), ('reg', 'Baseline')) since this combination was already fitted!
+Skipping (('imputer', 'Median'), ('scaler', 'Robust'), ('reduce_dim', 'passthrough'), ('reg', 'Ridge')) since this combination was already fitted!
+Pipeline Combinations:  57%|█████▋    | 62/108 [00:07<00:03, 13.79it/s]Skipping (('imputer', 'Median'), ('scaler', 'Robust'), ('reduce_dim', 'passthrough'), ('reg', 'Lasso')) since this combination was already fitted!
+Skipping (('imputer', 'Median'), ('scaler', 'Robust'), ('reduce_dim', 'passthrough'), ('reg', 'ElasticNet')) since this combination was already fitted!
+Pipeline Combinations:  59%|█████▉    | 64/108 [00:07<00:02, 14.93it/s]Skipping (('imputer', 'Median'), ('scaler', 'Robust'), ('reduce_dim', 'passthrough'), ('reg', 'BayesianRidge')) since this combination was already fitted!
+Skipping (('imputer', 'Median'), ('scaler', 'Robust'), ('reduce_dim', 'passthrough'), ('reg', 'SVR_Linear')) since this combination was already fitted!
+Pipeline Combinations:  61%|██████    | 66/108 [00:07<00:03, 13.89it/s]Skipping (('imputer', 'Median'), ('scaler', 'Robust'), ('reduce_dim', 'passthrough'), ('reg', 'SVR_RBF')) since this combination was already fitted!
+Skipping (('imputer', 'Median'), ('scaler', 'Robust'), ('reduce_dim', 'passthrough'), ('reg', 'HistGradBoost')) since this combination was already fitted!
+Pipeline Combinations:  63%|██████▎   | 68/108 [00:08<00:02, 13.54it/s]Skipping (('imputer', 'Median'), ('scaler', 'Robust'), ('reduce_dim', 'passthrough'), ('reg', 'RandomForest')) since this combination was already fitted!
+Skipping (('imputer', 'Median'), ('scaler', 'Robust'), ('reduce_dim', 'passthrough'), ('reg', 'GradientBoosting')) since this combination was already fitted!
+Pipeline Combinations:  65%|██████▍   | 70/108 [00:08<00:03, 11.51it/s]Skipping (('imputer', 'Median'), ('scaler', 'Robust'), ('reduce_dim', 'passthrough'), ('reg', 'KNN')) since this combination was already fitted!
+Skipping (('imputer', 'Median'), ('scaler', 'Robust'), ('reduce_dim', 'passthrough'), ('reg', 'DecisionTree')) since this combination was already fitted!
+Pipeline Combinations:  67%|██████▋   | 72/108 [00:08<00:02, 12.77it/s]Skipping (('imputer', 'Median'), ('scaler', 'MinMax'), ('reduce_dim', 'SelectKBest'), ('reg', 'Baseline')) since this combination was already fitted!
+Skipping (('imputer', 'Median'), ('scaler', 'MinMax'), ('reduce_dim', 'SelectKBest'), ('reg', 'Ridge')) since this combination was already fitted!
+Pipeline Combinations:  69%|██████▊   | 74/108 [00:08<00:02, 11.81it/s]Skipping (('imputer', 'Median'), ('scaler', 'MinMax'), ('reduce_dim', 'SelectKBest'), ('reg', 'Lasso')) since this combination was already fitted!
+Skipping (('imputer', 'Median'), ('scaler', 'MinMax'), ('reduce_dim', 'SelectKBest'), ('reg', 'ElasticNet')) since this combination was already fitted!
+Pipeline Combinations:  70%|███████   | 76/108 [00:08<00:03,  8.83it/s]Skipping (('imputer', 'Median'), ('scaler', 'MinMax'), ('reduce_dim', 'SelectKBest'), ('reg', 'BayesianRidge')) since this combination was already fitted!
+Skipping (('imputer', 'Median'), ('scaler', 'MinMax'), ('reduce_dim', 'SelectKBest'), ('reg', 'SVR_Linear')) since this combination was already fitted!
+Pipeline Combinations:  72%|███████▏  | 78/108 [00:09<00:03,  7.62it/s]Skipping (('imputer', 'Median'), ('scaler', 'MinMax'), ('reduce_dim', 'SelectKBest'), ('reg', 'SVR_RBF')) since this combination was already fitted!
+Pipeline Combinations:  73%|███████▎  | 79/108 [00:09<00:04,  6.13it/s]Skipping (('imputer', 'Median'), ('scaler', 'MinMax'), ('reduce_dim', 'SelectKBest'), ('reg', 'HistGradBoost')) since this combination was already fitted!
+Pipeline Combinations:  74%|███████▍  | 80/108 [00:09<00:04,  6.13it/s]Skipping (('imputer', 'Median'), ('scaler', 'MinMax'), ('reduce_dim', 'SelectKBest'), ('reg', 'RandomForest')) since this combination was already fitted!
+Pipeline Combinations:  75%|███████▌  | 81/108 [00:10<00:05,  5.35it/s]Skipping (('imputer', 'Median'), ('scaler', 'MinMax'), ('reduce_dim', 'SelectKBest'), ('reg', 'GradientBoosting')) since this combination was already fitted!
+Skipping (('imputer', 'Median'), ('scaler', 'MinMax'), ('reduce_dim', 'SelectKBest'), ('reg', 'KNN')) since this combination was already fitted!
+Skipping (('imputer', 'Median'), ('scaler', 'MinMax'), ('reduce_dim', 'SelectKBest'), ('reg', 'DecisionTree')) since this combination was already fitted!
+Skipping (('imputer', 'Median'), ('scaler', 'MinMax'), ('reduce_dim', 'RFE'), ('reg', 'Baseline')) since this combination was already fitted!
+Skipping (('imputer', 'Median'), ('scaler', 'MinMax'), ('reduce_dim', 'RFE'), ('reg', 'Ridge')) since this combination was already fitted!
+Skipping (('imputer', 'Median'), ('scaler', 'MinMax'), ('reduce_dim', 'RFE'), ('reg', 'Lasso')) since this combination was already fitted!
+Skipping (('imputer', 'Median'), ('scaler', 'MinMax'), ('reduce_dim', 'RFE'), ('reg', 'ElasticNet')) since this combination was already fitted!
+Skipping (('imputer', 'Median'), ('scaler', 'MinMax'), ('reduce_dim', 'RFE'), ('reg', 'BayesianRidge')) since this combination was already fitted!
+Skipping (('imputer', 'Median'), ('scaler', 'MinMax'), ('reduce_dim', 'RFE'), ('reg', 'SVR_Linear')) since this combination was already fitted!
+Skipping (('imputer', 'Median'), ('scaler', 'MinMax'), ('reduce_dim', 'RFE'), ('reg', 'SVR_RBF')) since this combination was already fitted!
+Skipping (('imputer', 'Median'), ('scaler', 'MinMax'), ('reduce_dim', 'RFE'), ('reg', 'HistGradBoost')) since this combination was already fitted!
+Skipping (('imputer', 'Median'), ('scaler', 'MinMax'), ('reduce_dim', 'RFE'), ('reg', 'RandomForest')) since this combination was already fitted!
+Skipping (('imputer', 'Median'), ('scaler', 'MinMax'), ('reduce_dim', 'RFE'), ('reg', 'GradientBoosting')) since this combination was already fitted!
+Skipping (('imputer', 'Median'), ('scaler', 'MinMax'), ('reduce_dim', 'RFE'), ('reg', 'KNN')) since this combination was already fitted!
+Skipping (('imputer', 'Median'), ('scaler', 'MinMax'), ('reduce_dim', 'RFE'), ('reg', 'DecisionTree')) since this combination was already fitted!
+Skipping (('imputer', 'Median'), ('scaler', 'MinMax'), ('reduce_dim', 'passthrough'), ('reg', 'Baseline')) since this combination was already fitted!
+Skipping (('imputer', 'Median'), ('scaler', 'MinMax'), ('reduce_dim', 'passthrough'), ('reg', 'Ridge')) since this combination was already fitted!
+Skipping (('imputer', 'Median'), ('scaler', 'MinMax'), ('reduce_dim', 'passthrough'), ('reg', 'Lasso')) since this combination was already fitted!
+Skipping (('imputer', 'Median'), ('scaler', 'MinMax'), ('reduce_dim', 'passthrough'), ('reg', 'ElasticNet')) since this combination was already fitted!
+Skipping (('imputer', 'Median'), ('scaler', 'MinMax'), ('reduce_dim', 'passthrough'), ('reg', 'BayesianRidge')) since this combination was already fitted!
+Skipping (('imputer', 'Median'), ('scaler', 'MinMax'), ('reduce_dim', 'passthrough'), ('reg', 'SVR_Linear')) since this combination was already fitted!
+Skipping (('imputer', 'Median'), ('scaler', 'MinMax'), ('reduce_dim', 'passthrough'), ('reg', 'SVR_RBF')) since this combination was already fitted!
+Skipping (('imputer', 'Median'), ('scaler', 'MinMax'), ('reduce_dim', 'passthrough'), ('reg', 'HistGradBoost')) since this combination was already fitted!
+
+Outer CV:   0%|          | 0/5 [00:00<?, ?it/s][A
+Outer CV:  20%|██        | 1/5 [00:47<03:08, 47.05s/it][A
+Outer CV:  40%|████      | 2/5 [00:58<01:18, 26.28s/it][A
+Outer CV:  60%|██████    | 3/5 [01:10<00:38, 19.44s/it][A
+Outer CV:  80%|████████  | 4/5 [01:21<00:16, 16.36s/it][A
+Outer CV: 100%|██████████| 5/5 [01:34<00:00, 15.02s/it][AOuter CV: 100%|██████████| 5/5 [01:34<00:00, 18.88s/it]
+Pipeline Combinations:  97%|█████████▋| 105/108 [01:46<00:10,  3.60s/it]
+Outer CV:   0%|          | 0/5 [00:00<?, ?it/s][A
+Outer CV:  20%|██        | 1/5 [00:08<00:33,  8.27s/it][A
+Outer CV:  40%|████      | 2/5 [00:16<00:25,  8.48s/it][A
+Outer CV:  60%|██████    | 3/5 [00:24<00:16,  8.10s/it][A
+Outer CV:  80%|████████  | 4/5 [00:31<00:07,  7.55s/it][A
+Outer CV: 100%|██████████| 5/5 [00:42<00:00,  8.76s/it][AOuter CV: 100%|██████████| 5/5 [00:42<00:00,  8.46s/it]
+Pipeline Combinations:  98%|█████████▊| 106/108 [02:35<00:11,  5.85s/it]
+Outer CV:   0%|          | 0/5 [00:00<?, ?it/s][A
+Outer CV:  20%|██        | 1/5 [00:38<02:33, 38.47s/it][A
+Outer CV:  40%|████      | 2/5 [00:39<00:48, 16.28s/it][A
+Outer CV:  60%|██████    | 3/5 [00:39<00:18,  9.03s/it][A
+Outer CV:  80%|████████  | 4/5 [00:40<00:05,  5.62s/it][A
+Outer CV: 100%|██████████| 5/5 [00:40<00:00,  3.80s/it][AOuter CV: 100%|██████████| 5/5 [00:40<00:00,  8.12s/it]
+Pipeline Combinations:  99%|█████████▉| 107/108 [03:23<00:08,  8.67s/it]
+Outer CV:   0%|          | 0/5 [00:00<?, ?it/s][A
+Outer CV:  20%|██        | 1/5 [00:02<00:08,  2.04s/it][A
+Outer CV:  40%|████      | 2/5 [00:03<00:05,  1.69s/it][A
+Outer CV:  60%|██████    | 3/5 [00:04<00:02,  1.26s/it][A
+Outer CV:  80%|████████  | 4/5 [00:04<00:00,  1.03it/s][A
+Outer CV: 100%|██████████| 5/5 [00:05<00:00,  1.03it/s][AOuter CV: 100%|██████████| 5/5 [00:05<00:00,  1.15s/it]
+Pipeline Combinations: 100%|██████████| 108/108 [03:33<00:00,  8.73s/it]Pipeline Combinations: 100%|██████████| 108/108 [03:33<00:00,  1.97s/it]
+Saved PipelinePermuter: D:\aaa_Desktop\Thesis\tcc_thesis\results\approach1\de_results\mae_as_goal\permuters\permuter_d5_ambiguity_tolerance.pkl
+Best by MAE: GradientBoosting | MAE=0.5824, RMSE=0.7301, R2=0.2198
+
+================================================================================
+DONE
+================================================================================
+Main results folder: D:\aaa_Desktop\Thesis\tcc_thesis\results\approach1\de_results\mae_as_goal
+Key files:
+  - D:\aaa_Desktop\Thesis\tcc_thesis\results\approach1\de_results\mae_as_goal\best_model_per_dimension.csv
+  - D:\aaa_Desktop\Thesis\tcc_thesis\results\approach1\de_results\mae_as_goal\best_model_family_per_dimension.csv
+  - D:\aaa_Desktop\Thesis\tcc_thesis\results\approach1\de_results\mae_as_goal\detailed_pipeline_metrics.csv
+  - D:\aaa_Desktop\Thesis\tcc_thesis\results\approach1\de_results\mae_as_goal\model_family_summary.csv
+  - D:\aaa_Desktop\Thesis\tcc_thesis\results\approach1\de_results\mae_as_goal\outer_cv_predictions.csv

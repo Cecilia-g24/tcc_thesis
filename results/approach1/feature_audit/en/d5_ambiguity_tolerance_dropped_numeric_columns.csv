@@ -1,0 +1,6 @@
+language,dimension,dropped_numeric_column
+en,d5_ambiguity_tolerance,rater_one
+en,d5_ambiguity_tolerance,rater_two
+en,d5_ambiguity_tolerance,rater_three
+en,d5_ambiguity_tolerance,average_score
+en,d5_ambiguity_tolerance,Segment

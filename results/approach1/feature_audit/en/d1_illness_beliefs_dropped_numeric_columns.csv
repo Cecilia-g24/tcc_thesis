@@ -1,0 +1,6 @@
+language,dimension,dropped_numeric_column
+en,d1_illness_beliefs,rater_one
+en,d1_illness_beliefs,rater_two
+en,d1_illness_beliefs,rater_three
+en,d1_illness_beliefs,average_score
+en,d1_illness_beliefs,Segment

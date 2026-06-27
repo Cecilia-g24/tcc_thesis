@@ -1,0 +1,40 @@
+Rate the following therapist transcript for one target dimension of transcultural competence.
+
+Use only the rating manual criteria below. Do not infer missing patient background or the hidden video prompt.
+
+Target dimension:
+{dimension_name}
+
+Instruction:
+{dimension_instruction}
+
+Rating criteria:
+{dimension_criteria}
+
+Important dimension-specific note:
+{dimension_note}
+
+General scoring rules:
+- Use a score from 0 to 4.
+- 0 = inadequate implementation.
+- 1 = very limited implementation.
+- 2 = task fulfilled.
+- 3 = good implementation.
+- 4 = excellent implementation.
+- A score of 2 means the task is fulfilled.
+- A high score does not require a perfect response.
+- A high score does not require every performance criterion to be met.
+- Even a few well-executed performance criteria can be sufficient for a high score.
+- Deduct points if the task is only partially fulfilled or not fulfilled.
+- Also consider basic communication quality: the response should be appropriate and easy for the patient to understand.
+- Deduct points for unclear, ambiguous, leading, lecturing, derogatory, incomprehensible, very long/convoluted responses, or many questions in succession.
+- Treat transcription errors leniently if the meaning is still understandable.
+- If the transcript content is incomprehensible, assign a low score.
+
+Transcript:
+{transcript}
+
+Return only valid JSON with exactly this key:
+{
+  "score": 0
+}

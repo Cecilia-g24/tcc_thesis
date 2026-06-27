@@ -1,0 +1,21 @@
+variant,dimension,model_family,pipeline,MAE,RMSE,R2,Pearson_r,Spearman_rho,n_predictions
+de_mae,d1_illness_beliefs,HistGradBoost,pipeline_imputer=Median | pipeline_scaler=MinMax | pipeline_reduce_dim=SelectKBest | pipeline_reg=HistGradBoost,0.5271,0.6725,0.2796,0.5413,0.4723,233
+de_mae,d2_lack_of_knowledge,GradientBoosting,pipeline_imputer=Median | pipeline_scaler=Robust | pipeline_reduce_dim=RFE | pipeline_reg=GradientBoosting,0.6505,0.8067,0.2651,0.5227,0.4701,225
+de_mae,d3_cultural_factors,SVR_RBF,pipeline_imputer=Median | pipeline_scaler=Standard | pipeline_reduce_dim=passthrough | pipeline_reg=SVR_RBF,0.7726,0.9494,0.2387,0.4904,0.4746,231
+de_mae,d4_family_system,RandomForest,pipeline_imputer=Median | pipeline_scaler=MinMax | pipeline_reduce_dim=passthrough | pipeline_reg=RandomForest,0.4648,0.5909,0.392,0.638,0.6191,224
+de_mae,d5_ambiguity_tolerance,GradientBoosting,pipeline_imputer=Median | pipeline_scaler=Robust | pipeline_reduce_dim=SelectKBest | pipeline_reg=GradientBoosting,0.5824,0.7301,0.2198,0.48,0.4412,227
+de_rmse,d1_illness_beliefs,RandomForest,pipeline_imputer=Median | pipeline_scaler=MinMax | pipeline_reduce_dim=passthrough | pipeline_reg=RandomForest,0.5446,0.6707,0.2834,0.5512,0.4623,233
+de_rmse,d2_lack_of_knowledge,GradientBoosting,pipeline_imputer=Median | pipeline_scaler=Standard | pipeline_reduce_dim=passthrough | pipeline_reg=GradientBoosting,0.6583,0.7812,0.3109,0.5629,0.5289,225
+de_rmse,d3_cultural_factors,SVR_RBF,pipeline_imputer=Median | pipeline_scaler=Standard | pipeline_reduce_dim=passthrough | pipeline_reg=SVR_RBF,0.7726,0.9494,0.2387,0.4904,0.4746,231
+de_rmse,d4_family_system,RandomForest,pipeline_imputer=Median | pipeline_scaler=MinMax | pipeline_reduce_dim=passthrough | pipeline_reg=RandomForest,0.4635,0.5908,0.3922,0.6385,0.6166,224
+de_rmse,d5_ambiguity_tolerance,GradientBoosting,pipeline_imputer=Median | pipeline_scaler=Robust | pipeline_reduce_dim=SelectKBest | pipeline_reg=GradientBoosting,0.5842,0.733,0.2135,0.4689,0.4565,227
+en_mae,d1_illness_beliefs,SVR_RBF,pipeline_imputer=Median | pipeline_scaler=MinMax | pipeline_reduce_dim=passthrough | pipeline_reg=SVR_RBF,0.502,0.631,0.3657,0.605,0.5534,233
+en_mae,d2_lack_of_knowledge,HistGradBoost,pipeline_imputer=Median | pipeline_scaler=Robust | pipeline_reduce_dim=SelectKBest | pipeline_reg=HistGradBoost,0.6521,0.8081,0.2625,0.5205,0.5153,225
+en_mae,d3_cultural_factors,SVR_RBF,pipeline_imputer=Median | pipeline_scaler=Standard | pipeline_reduce_dim=passthrough | pipeline_reg=SVR_RBF,0.7544,0.9213,0.2832,0.5328,0.5429,231
+en_mae,d4_family_system,RandomForest,pipeline_imputer=Median | pipeline_scaler=MinMax | pipeline_reduce_dim=SelectKBest | pipeline_reg=RandomForest,0.4824,0.6152,0.341,0.5848,0.5597,224
+en_mae,d5_ambiguity_tolerance,GradientBoosting,pipeline_imputer=Median | pipeline_scaler=Standard | pipeline_reduce_dim=SelectKBest | pipeline_reg=GradientBoosting,0.5442,0.7078,0.2667,0.518,0.4865,227
+en_rmse,d1_illness_beliefs,SVR_RBF,pipeline_imputer=Median | pipeline_scaler=MinMax | pipeline_reduce_dim=passthrough | pipeline_reg=SVR_RBF,0.497,0.6302,0.3673,0.6072,0.56,233
+en_rmse,d2_lack_of_knowledge,SVR_RBF,pipeline_imputer=Median | pipeline_scaler=MinMax | pipeline_reduce_dim=passthrough | pipeline_reg=SVR_RBF,0.6462,0.7955,0.2854,0.5369,0.5393,225
+en_rmse,d3_cultural_factors,SVR_RBF,pipeline_imputer=Median | pipeline_scaler=Standard | pipeline_reduce_dim=passthrough | pipeline_reg=SVR_RBF,0.7444,0.9168,0.2901,0.5462,0.5519,231
+en_rmse,d4_family_system,GradientBoosting,pipeline_imputer=Median | pipeline_scaler=MinMax | pipeline_reduce_dim=passthrough | pipeline_reg=GradientBoosting,0.4978,0.6231,0.324,0.5729,0.4819,224
+en_rmse,d5_ambiguity_tolerance,GradientBoosting,pipeline_imputer=Median | pipeline_scaler=Standard | pipeline_reduce_dim=SelectKBest | pipeline_reg=GradientBoosting,0.5605,0.7097,0.2627,0.5133,0.4915,227

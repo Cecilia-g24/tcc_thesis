@@ -1,0 +1,81 @@
+{
+  "created_at": "2026-06-22T16:49:18",
+  "project_root": "D:\\aaa_Desktop\\Thesis\\tcc_thesis",
+  "input_csv": "D:\\aaa_Desktop\\Thesis\\tcc_thesis\\data\\data_clean\\02_results_liwc_dict\\LIWC-22 Results - full_dataset_de - LIWC Analysis.csv",
+  "results_dir": "D:\\aaa_Desktop\\Thesis\\tcc_thesis\\results\\approach1\\de_results\\mae_as_goal",
+  "target_column": "average_score",
+  "optimization_scoring": "neg_mean_absolute_error",
+  "selection_rule": "lowest MAE computed from outer-CV predictions",
+  "outer_cv": {
+    "type": "KFold",
+    "n_splits": 5,
+    "shuffle": true,
+    "random_state": 42
+  },
+  "inner_cv": {
+    "type": "KFold",
+    "n_splits": 3,
+    "shuffle": true,
+    "random_state": 0
+  },
+  "dimensions": [
+    "d1_illness_beliefs",
+    "d2_lack_of_knowledge",
+    "d3_cultural_factors",
+    "d4_family_system",
+    "d5_ambiguity_tolerance"
+  ],
+  "pipeline_steps": {
+    "imputer": [
+      "Median"
+    ],
+    "scaler": [
+      "Standard",
+      "Robust",
+      "MinMax"
+    ],
+    "reduce_dim": [
+      "SelectKBest",
+      "RFE",
+      "passthrough"
+    ],
+    "reg": [
+      "Baseline",
+      "Ridge",
+      "Lasso",
+      "ElasticNet",
+      "BayesianRidge",
+      "SVR_Linear",
+      "SVR_RBF",
+      "HistGradBoost",
+      "RandomForest",
+      "GradientBoosting",
+      "KNN",
+      "DecisionTree"
+    ]
+  },
+  "params_dict_keys": [
+    "Median",
+    "Standard",
+    "Robust",
+    "MinMax",
+    "SelectKBest",
+    "RFE",
+    "passthrough",
+    "Baseline",
+    "Ridge",
+    "Lasso",
+    "ElasticNet",
+    "BayesianRidge",
+    "SVR_Linear",
+    "SVR_RBF",
+    "HistGradBoost",
+    "RandomForest",
+    "GradientBoosting",
+    "KNN",
+    "DecisionTree"
+  ],
+  "biopsykit_pipeline_cache_enabled": false,
+  "biopsykit_verbose": 0,
+  "biopsykit_n_jobs": -1
+}

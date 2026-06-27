@@ -1,0 +1,16 @@
+language,dimension,feature_index,feature_name,dtype,n_missing,missing_rate,n_unique,most_frequent_value_ratio,zero_variance,near_zero_variance_95pct_same_value,suspicious_name,min,max,mean,std
+de,d2_lack_of_knowledge,15,you_sing,float64,0,0.0,1,1.0,True,True,False,0.0,0.0,0.0,0.0
+de,d2_lack_of_knowledge,17,you_formal,int64,0,0.0,1,1.0,True,True,False,0.0,0.0,0.0,0.0
+de,d2_lack_of_knowledge,60,ingest,float64,0,0.0,2,0.9956,False,True,False,0.0,0.962,0.004275555555555555,0.06413333333333332
+de,d2_lack_of_knowledge,81,swear,float64,0,0.0,2,0.9956,False,True,False,0.0,1.923,0.008546666666666668,0.1282
+de,d2_lack_of_knowledge,84,nonflu,float64,0,0.0,6,0.9733,False,True,False,0.0,3.846,0.06999555555555555,0.4363896163998261
+de,d2_lack_of_knowledge,85,filler,float64,0,0.0,7,0.9733,False,True,False,0.0,2.597,0.046031111111111106,0.2996410410675805
+de,d2_lack_of_knowledge,89,Colon,int64,0,0.0,1,1.0,True,True,False,0.0,0.0,0.0,0.0
+de,d2_lack_of_knowledge,90,SemiC,int64,0,0.0,1,1.0,True,True,False,0.0,0.0,0.0,0.0
+de,d2_lack_of_knowledge,92,Exclam,float64,0,0.0,1,1.0,True,True,False,0.0,0.0,0.0,0.0
+de,d2_lack_of_knowledge,93,Dash,float64,0,0.0,6,0.9778,False,True,False,0.0,6.667,0.06193777777777777,0.511506262743084
+de,d2_lack_of_knowledge,94,Quote,int64,0,0.0,1,1.0,True,True,False,0.0,0.0,0.0,0.0
+de,d2_lack_of_knowledge,95,Apostro,float64,0,0.0,1,1.0,True,True,False,0.0,0.0,0.0,0.0
+de,d2_lack_of_knowledge,96,Parenth,int64,0,0.0,1,1.0,True,True,False,0.0,0.0,0.0,0.0
+de,d2_lack_of_knowledge,97,OtherP,int64,0,0.0,1,1.0,True,True,False,0.0,0.0,0.0,0.0
+de,d2_lack_of_knowledge,98,Emoji,int64,0,0.0,1,1.0,True,True,False,0.0,0.0,0.0,0.0

@@ -1,0 +1,17 @@
+language,dimension,feature_index,feature_name,dtype,n_missing,missing_rate,n_unique,most_frequent_value_ratio,zero_variance,near_zero_variance_95pct_same_value,suspicious_name,min,max,mean,std
+de,d4_family_system,15,you_sing,float64,0,0.0,3,0.9911,False,True,False,0.0,13.793,0.06391517857142857,0.9220914796314607
+de,d4_family_system,17,you_formal,int64,0,0.0,1,1.0,True,True,False,0.0,0.0,0.0,0.0
+de,d4_family_system,60,ingest,float64,0,0.0,3,0.9911,False,True,False,0.0,2.439,0.01786607142857143,0.19315866270560864
+de,d4_family_system,79,death,float64,0,0.0,5,0.9821,False,True,False,0.0,3.333,0.03541071428571429,0.2943794584119509
+de,d4_family_system,81,swear,float64,0,0.0,2,0.9955,False,True,False,0.0,0.488,0.0021785714285714286,0.032605871513315766
+de,d4_family_system,84,nonflu,float64,0,0.0,6,0.9777,False,True,False,0.0,4.545,0.059875,0.4290635151116906
+de,d4_family_system,85,filler,float64,0,0.0,7,0.9732,False,True,False,0.0,3.448,0.05609375,0.359325408256998
+de,d4_family_system,89,Colon,int64,0,0.0,1,1.0,True,True,False,0.0,0.0,0.0,0.0
+de,d4_family_system,90,SemiC,int64,0,0.0,1,1.0,True,True,False,0.0,0.0,0.0,0.0
+de,d4_family_system,92,Exclam,float64,0,0.0,1,1.0,True,True,False,0.0,0.0,0.0,0.0
+de,d4_family_system,93,Dash,float64,0,0.0,3,0.9911,False,True,False,0.0,0.781,0.006674107142857143,0.07054493876139845
+de,d4_family_system,94,Quote,int64,0,0.0,1,1.0,True,True,False,0.0,0.0,0.0,0.0
+de,d4_family_system,95,Apostro,float64,0,0.0,1,1.0,True,True,False,0.0,0.0,0.0,0.0
+de,d4_family_system,96,Parenth,int64,0,0.0,1,1.0,True,True,False,0.0,0.0,0.0,0.0
+de,d4_family_system,97,OtherP,int64,0,0.0,1,1.0,True,True,False,0.0,0.0,0.0,0.0
+de,d4_family_system,98,Emoji,int64,0,0.0,1,1.0,True,True,False,0.0,0.0,0.0,0.0

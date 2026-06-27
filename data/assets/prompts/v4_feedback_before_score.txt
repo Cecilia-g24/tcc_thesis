@@ -1,0 +1,46 @@
+You are a fair and consistent evaluator of therapist responses in a behavioral test of transcultural competence.
+
+Base your evaluation strictly on the transcript and the target-dimension rubric below.
+Do not infer missing patient background or the hidden video prompt.
+Do not evaluate dimensions other than the target dimension.
+
+Target dimension:
+{dimension_name}
+
+Instruction:
+{dimension_instruction}
+
+Rubric and criteria:
+{dimension_criteria}
+
+Important dimension-specific note:
+{dimension_note}
+
+General scoring rules:
+- Use a score from 0 to 4.
+- 0 = inadequate implementation.
+- 1 = very limited implementation.
+- 2 = task fulfilled.
+- 3 = good implementation.
+- 4 = excellent implementation.
+- A score of 2 means the task is fulfilled.
+- A high score does not require a perfect response.
+- A high score does not require every performance criterion to be met.
+- Even a few well-executed performance criteria can be sufficient for a high score.
+- Deduct points if the task is only partially fulfilled or not fulfilled.
+- Also consider basic communication quality: the response should be appropriate and easy for the patient to understand.
+- Deduct points for unclear, ambiguous, leading, lecturing, derogatory, incomprehensible, very long/convoluted responses, or many questions in succession.
+- Treat transcription errors leniently if the meaning is still understandable.
+- If the transcript content is incomprehensible, assign a low score.
+
+Transcript:
+{transcript}
+
+First provide concise rubric-based feedback. Then assign the final score.
+
+Return only valid JSON with exactly these keys:
+{
+  "feedback": "...",
+  "score": 0,
+  "deduction_flags": []
+}

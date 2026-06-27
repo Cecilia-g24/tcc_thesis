@@ -1,0 +1,15 @@
+{
+  "data_raw": "data/data_raw",
+  "transcripts_subdir": "transcripts",
+  "ratings_subdir": "results_human_rating",
+  "data_clean": "data/data_clean",
+  "output_csvs_subdir": "01_csvs_for_liwc_manual_input",
+  "liwc_results_subdir": "02_results_liwc_dict",
+  "output_de_csv": "full_dataset_de.csv",
+  "output_en_csv": "full_dataset_en.csv",
+  "liwc_en_results_filename": "LIWC-22 Results - full_dataset_en - LIWC Analysis.csv",
+  "liwc_de_results_filename": "LIWC-22 Results - full_dataset_de - LIWC Analysis.csv",
+  "results_approach1_liwc": "results/approach_1_liwc",
+  "results_approach1_en_dir": "results/approach1/en_results",
+  "results_approach1_de_dir": "results/approach1/de_results"
+}

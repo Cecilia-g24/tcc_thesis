@@ -1,0 +1,6 @@
+dimension,de_mae,de_rmse,en_mae,en_rmse,all_agree
+d1_illness_beliefs,HistGradBoost,RandomForest,SVR_RBF,SVR_RBF,False
+d2_lack_of_knowledge,GradientBoosting,GradientBoosting,HistGradBoost,SVR_RBF,False
+d3_cultural_factors,SVR_RBF,SVR_RBF,SVR_RBF,SVR_RBF,True
+d4_family_system,RandomForest,RandomForest,RandomForest,GradientBoosting,False
+d5_ambiguity_tolerance,GradientBoosting,GradientBoosting,GradientBoosting,GradientBoosting,True

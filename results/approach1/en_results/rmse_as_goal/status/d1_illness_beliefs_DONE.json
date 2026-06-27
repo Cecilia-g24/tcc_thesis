@@ -1,0 +1,7 @@
+{
+  "dimension": "d1_illness_beliefs",
+  "completed_at": "2026-06-22T16:18:24",
+  "checkpoint_path": "D:\\aaa_Desktop\\Thesis\\tcc_thesis\\results\\approach1\\en_results\\rmse_as_goal\\permuters\\permuter_d1_illness_beliefs.pkl",
+  "n_rows": 233,
+  "n_features": 118
+}

@@ -1,0 +1,30 @@
+{
+  "n_row_level_pairwise_tests": 20,
+  "n_significant_after_fdr": 0,
+  "primary_contrasts": [
+    "de_mae_vs_de_rmse",
+    "en_mae_vs_en_rmse",
+    "de_mae_vs_en_mae",
+    "de_rmse_vs_en_rmse"
+  ],
+  "dimensions_with_diverging_best_model_family": [
+    "d1_illness_beliefs",
+    "d2_lack_of_knowledge",
+    "d4_family_system"
+  ],
+  "n_dimensions_with_diverging_best_model_family": 3,
+  "friedman_omnibus": [
+    {
+      "metric": "MAE",
+      "n_blocks_dimensions": 5,
+      "statistic": 3.8571428571428585,
+      "p_value": 0.2773090569001116
+    },
+    {
+      "metric": "RMSE",
+      "n_blocks_dimensions": 5,
+      "statistic": 1.8979591836734688,
+      "p_value": 0.5938533045149423
+    }
+  ]
+}
