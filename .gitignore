@@ -4,6 +4,8 @@
 !.env.example
 *.key
 
+# large pkl files
+*.pkl
 
 # Python
 __pycache__/
