@@ -11,22 +11,29 @@ Important constraints:
 - Rate only the target dimension specified below.
 
 Target dimension:
-{dimension_name}
+Inquiring about subjective ideas about illness and healing
 
 Instruction:
-{dimension_instruction}
+Explore how the patients explain their problems to themselves.
 
 Rating criteria:
-{dimension_criteria}
+Explore the patient's subjective explanatory model and/or concepts of healing; validate the patient's perspective; and flexibly adapt the therapeutic style accordingly. Manual performance criteria include:
+- Summarizing the patient's explanatory model in the therapist's own words.
+- Asking about the patient's explanatory model, such as how the patient explains the symptoms or what the patient believes caused the problem.
+- Asking about the patient's ideas about healing or what the patient thinks could help.
+- Clarifying the patient's expectations for therapy or how the therapist can support the patient.
+- Defining the therapist's role when appropriate.
+- Addressing obvious reservations or concerns from the patient.
+- Showing understanding and sensitivity to the patient's doubts or objections.
+- Validating the patient's openness in expressing doubts or concerns.
+- Validating the patient's explanatory model.
 
 Important dimension-specific note:
-{dimension_note}
-
-Use this checklist before assigning the score:
-{checklist}
+Neither symptom exploration alone nor validation alone is sufficient. The patient's understanding of illness and/or healing should be explicitly explored.
 
 General scoring rules:
-- Use a score from 0 to 4.
+- Use exactly one integer score from 0 to 4.
+- Valid scores are only 0, 1, 2, 3, and 4. Do not use decimals.
 - 0 = inadequate implementation.
 - 1 = very limited implementation.
 - 2 = task fulfilled.
@@ -45,16 +52,8 @@ General scoring rules:
 Transcript:
 {transcript}
 
-Return only valid JSON with exactly these keys:
+Return only valid JSON with exactly these keys. The value of "score" must be an integer 0, 1, 2, 3, or 4:
 {
-  "checklist": {
-    "1": "yes/partly/no",
-    "2": "yes/partly/no",
-    "3": "yes/partly/no",
-    "4": "yes/partly/no",
-    "5": "yes/partly/no"
-  },
   "score": 0,
-  "brief_rationale": "...",
-  "deduction_flags": []
+  "brief_rationale": "..."
 }

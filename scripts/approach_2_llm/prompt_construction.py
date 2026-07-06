@@ -1,4 +1,6 @@
-### to display all 5 prompt variants, run this script with the --display flag. The prompts will be saved as .txt files in data/assets/prompts.
+### to preview the 5 prompt variants for one dimension, run this script with the --display
+### flag and enter a dimension code when prompted. The prompts will be saved as .txt files
+### in data/assets/prompts/<dimension_code>/.
 # python prompt_construction.py --display
 
 """
@@ -14,13 +16,25 @@ The dimension code passed to build_prompt must be one of:
     d4_family_system
     d5_ambiguity_tolerance
 
+The variant_id passed to build_prompt must be one of:
+    V1_full_manual_baseline
+    V2_no_anchors
+    V3_no_rationale
+    V4_evidence_before_score
+    V5_structured_checklist
+
+Each variant is defined as a single-factor change relative to V1_full_manual_baseline
+(see VariantSpec / VARIANTS below), not as an independently written template. This keeps
+the ablation clean: rendering V1 and any other variant for the same dimension differs
+in exactly the one toggle that variant is meant to test, and nowhere else.
+
 Usage (from an assessment script):
     from prompt_construction import build_prompt
 
     prompt = build_prompt(
         dimension_code="d1_illness_beliefs",
         transcript=transcript_text,
-        variant_id="v1_manual_rubric",
+        variant_id="V1_full_manual_baseline",
     )
 """
 
@@ -29,6 +43,7 @@ from __future__ import annotations
 import argparse
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Literal
 
 
 # ---------------------------------------------------------------------------
@@ -86,22 +101,32 @@ DIMENSIONS: dict[str, DimensionSpec] = {
         name="Inquiring about subjective ideas about illness and healing",
         instruction="Explore how the patients explain their problems to themselves.",
         criteria=(
-            "Explore the patient's subjective explanatory model and/or concepts of healing; "
-            "validate the patient's perspective; and flexibly adapt the therapeutic style. "
-            "Relevant behaviors include summarizing the patient's explanatory model, asking how the patient explains the symptoms, "
-            "asking about healing ideas, clarifying expectations for therapy, defining the therapist role when appropriate, "
-            "addressing reservations or concerns, and showing understanding and sensitivity to doubts or objections."
+            "Explore the patient's subjective explanatory model and/or concepts of healing; validate the patient's perspective; "
+            "and flexibly adapt the therapeutic style accordingly. Manual performance criteria include:\n"
+            "- Summarizing the patient's explanatory model in the therapist's own words.\n"
+            "- Asking about the patient's explanatory model, such as how the patient explains the symptoms or what the patient believes caused the problem.\n"
+            "- Asking about the patient's ideas about healing or what the patient thinks could help.\n"
+            "- Clarifying the patient's expectations for therapy or how the therapist can support the patient.\n"
+            "- Defining the therapist's role when appropriate.\n"
+            "- Addressing obvious reservations or concerns from the patient.\n"
+            "- Showing understanding and sensitivity to the patient's doubts or objections.\n"
+            "- Validating the patient's openness in expressing doubts or concerns.\n"
+            "- Validating the patient's explanatory model."
         ),
         note=(
             "Neither symptom exploration alone nor validation alone is sufficient. "
             "The patient's understanding of illness and/or healing should be explicitly explored."
         ),
         checklist=[
-            "Does the response explicitly explore the patient's subjective explanation of illness or healing?",
-            "Does it validate or respectfully reflect the patient's perspective?",
-            "Does it avoid dismissing the patient's explanatory model?",
-            "Does it clarify expectations, doubts, or concerns about therapy when relevant?",
-            "Is the response understandable, non-lecturing, and clinically appropriate?",
+            "Does the response summarize the patient's explanatory model in the therapist's own words?",
+            "Does the response ask about the patient's explanatory model, such as how the patient explains the symptoms or what the patient believes caused the problem?",
+            "Does the response ask about the patient's ideas about healing or what the patient thinks could help?",
+            "Does the response clarify the patient's expectations for therapy or how the therapist can support the patient?",
+            "Does the response define the therapist's role when appropriate?",
+            "Does the response address obvious reservations or concerns from the patient?",
+            "Does the response show understanding and sensitivity to the patient's doubts or objections?",
+            "Does the response validate the patient's openness in expressing doubts or concerns?",
+            "Does the response validate the patient's explanatory model?",
         ],
         anchor_examples={
             4: [
@@ -131,20 +156,26 @@ DIMENSIONS: dict[str, DimensionSpec] = {
         name="Proactively dealing with not knowing",
         instruction="Encourage the patients to explain their statement in more detail.",
         criteria=(
-            "Approach the patient openly; reveal gaps in one's own knowledge; ask questions to better understand the patient's statements; "
-            "clarify imprecise statements; openly admit lack of knowledge or uncertainty; emphasize the patient's expertise; "
-            "check understanding with clarifying questions; and encourage the patient to take an active role in explaining the statement."
+            "Approach the patient openly, reveal gaps in the therapist's own knowledge, and ask questions to better understand the patient's statements. "
+            "Manual performance criteria include:\n"
+            "- Clarifying imprecise patient statements, for example by asking what exactly the patient means.\n"
+            "- Openly admitting the therapist's own lack of knowledge when relevant.\n"
+            "- Openly acknowledging the therapist's own uncertainty when relevant.\n"
+            "- Emphasizing the patient's expertise about their own experience or meaning.\n"
+            "- Checking the therapist's understanding by asking clarifying questions.\n"
+            "- Appropriately encouraging the patient to take an active role, for example by giving another example or explaining the statement further."
         ),
         note=(
             "This dimension concerns specific follow-up questions regarding patient statements, "
             "not general exploration of complaints."
         ),
         checklist=[
-            "Does the response ask a specific follow-up question about the patient's statement?",
-            "Does it show openness, curiosity, or willingness to learn from the patient?",
-            "Does it acknowledge uncertainty or avoid pretending to already know?",
-            "Does it encourage the patient to explain the statement in more detail?",
-            "Does it avoid dismissing, lecturing, judging, or giving premature advice?",
+            "Does the response clarify imprecise patient statements, for example by asking what exactly the patient means?",
+            "Does the response openly admit the therapist's own lack of knowledge when relevant?",
+            "Does the response openly acknowledge the therapist's own uncertainty when relevant?",
+            "Does the response emphasize the patient's expertise about their own experience or meaning?",
+            "Does the response check the therapist's understanding by asking clarifying questions?",
+            "Does the response appropriately encourage the patient to take an active role, for example by giving another example or explaining the statement further?",
         ],
         anchor_examples={
             4: [
@@ -174,22 +205,24 @@ DIMENSIONS: dict[str, DimensionSpec] = {
         name="Consideration of cultural and contextual factors",
         instruction="Discuss with the patients whether their culture or external circumstances, such as migration or discrimination, could influence their symptoms or therapy.",
         criteria=(
-            "Suggest whether cultural or contextual factors such as migration, language, discrimination, religion, or external circumstances "
-            "could influence the patient's complaints, cooperation, or therapy. Relevant behaviors include asking whether cultural/contextual conditions "
-            "could predispose to, trigger, or maintain complaints; openly addressing differences between patient and therapist as potential influences; "
-            "using culture or belief as a resource/protective factor; asking about stress or internal conflicts from cultural differences; "
-            "and developing hypotheses together with the patient."
+            "Suggest whether cultural or contextual factors such as migration, language, discrimination, religion, or external circumstances could influence "
+            "the patient's complaints, cooperation, or therapy. Manual performance criteria include:\n"
+            "- Asking whether cultural or contextual conditions, such as migration, language, or discrimination, could predispose to, trigger, or maintain the complaints.\n"
+            "- Openly addressing differences between patient and therapist as a possible influence on therapy.\n"
+            "- Using culture or belief as a resource or protective factor when relevant.\n"
+            "- Asking about stress or internal conflicts resulting from cultural differences.\n"
+            "- Developing hypotheses together with the patient about whether culture, belief, migration, language, discrimination, religion, or other external circumstances influence complaints, cooperation, or therapy."
         ),
         note=(
             "The goal is to understand the personal significance of cultural and contextual influences as possible stressors or protective factors and to integrate them constructively. "
             "This dimension requires proactive suggestions rather than only general exploration."
         ),
         checklist=[
-            "Does the response explicitly mention a cultural, contextual, migration-related, language-related, religious, or discrimination-related factor?",
-            "Does it suggest, without forcing, that this factor could influence symptoms, distress, cooperation, or therapy?",
-            "Does it invite the patient to reflect on the personal meaning of this factor?",
-            "Does it avoid leading, stereotyping, or overgeneralizing based on culture?",
-            "Is the response validating and clinically appropriate?",
+            "Does the response ask whether cultural or contextual conditions, such as migration, language, or discrimination, could predispose to, trigger, or maintain the complaints?",
+            "Does the response openly address differences between patient and therapist as a possible influence on therapy?",
+            "Does the response use culture or belief as a resource or protective factor when relevant?",
+            "Does the response ask about stress or internal conflicts resulting from cultural differences?",
+            "Does the response develop hypotheses together with the patient about whether culture, belief, migration, language, discrimination, religion, or other external circumstances influence complaints, cooperation, or therapy?",
         ],
         anchor_examples={
             4: [
@@ -220,19 +253,28 @@ DIMENSIONS: dict[str, DimensionSpec] = {
         instruction="Explore the described situation and encourage the patient to change her perspective.",
         criteria=(
             "Explore the patient's complaints within the family context and work collaboratively toward possible solutions without giving advice. "
-            "Relevant behaviors include validating the difficult situation, validating obligation or guilt toward the family, validating the importance of family, "
-            "asking how the family deals with the problem, encouraging the patient to generate possible solutions in their environment, "
-            "taking the perspective of relevant people, identifying important reference persons, and using circular questions."
+            "Manual performance criteria include:\n"
+            "- Validating the patient's difficult situation.\n"
+            "- Validating the patient's feeling of obligation or guilt toward the family.\n"
+            "- Validating the importance of family for the patient.\n"
+            "- Asking about the family's approach to the problem or how the family usually deals with such problems.\n"
+            "- Encouraging the patient to independently generate possible solutions in their environment.\n"
+            "- Inviting perspective-taking from relevant people in the patient's family or social environment.\n"
+            "- Identifying relevant reference persons in the family or social environment.\n"
+            "- Using circular questions about how relevant family members or other people might feel, think, or react."
         ),
         note=(
             "The patient's environment should be included. This dimension is not mainly about the patient's own individual perspective."
         ),
         checklist=[
-            "Does the response include the family or social environment in understanding the problem?",
-            "Does it validate the patient's family-related obligation, guilt, loyalty, conflict, or burden?",
-            "Does it ask about family members' perspectives, reactions, or ways of dealing with the problem?",
-            "Does it encourage collaborative reflection or possible solutions without giving direct advice?",
-            "Does it avoid dismissing the family's importance or pushing the patient toward a simplistic decision?",
+            "Does the response validate the patient's difficult situation?",
+            "Does the response validate the patient's feeling of obligation or guilt toward the family?",
+            "Does the response validate the importance of family for the patient?",
+            "Does the response ask about the family's approach to the problem or how the family usually deals with such problems?",
+            "Does the response encourage the patient to independently generate possible solutions in their environment?",
+            "Does the response invite perspective-taking from relevant people in the patient's family or social environment?",
+            "Does the response identify relevant reference persons in the family or social environment?",
+            "Does the response use circular questions about how relevant family members or other people might feel, think, or react?",
         ],
         anchor_examples={
             4: [
@@ -263,19 +305,30 @@ DIMENSIONS: dict[str, DimensionSpec] = {
         instruction="Invite the patients to a dialogue about the aforementioned viewpoint.",
         criteria=(
             "Validate that the topic is important to the patient, show openness to the patient's perspective, and explore the perspective without judgment. "
-            "Relevant behaviors include validating the topic's importance, validating the patient's openness, highlighting strengths or resources, "
-            "summarizing and reflecting the patient's viewpoint, exploring what the patient means, avoiding judgments of right or wrong, "
-            "addressing contradictory statements, and respectfully setting boundaries when needed."
+            "Manual performance criteria include:\n"
+            "- Validating the importance or significance of the topic for the patient.\n"
+            "- Validating the patient's openness.\n"
+            "- Highlighting strengths or resources expressed in the patient's statement.\n"
+            "- Summarizing and reflecting back the patient's viewpoint.\n"
+            "- Exploring the mentioned perspective, for example by asking what the patient means.\n"
+            "- Summarizing the patient's statement in the therapist's own words.\n"
+            "- Avoiding judgments of the patient's viewpoint as right or wrong.\n"
+            "- Addressing contradictory statements when relevant.\n"
+            "- Respectfully setting the therapist's own boundaries when needed."
         ),
         note=(
             "The focus is on the patient's perspective. This is distinct from the family-system dimension."
         ),
         checklist=[
-            "Does the response validate that the patient's viewpoint is important or meaningful to them?",
-            "Does it explore the viewpoint without judging it as right or wrong?",
-            "Does it reflect or summarize the patient's perspective accurately?",
-            "Does it invite further dialogue or clarification about the viewpoint?",
-            "Does it avoid dismissive, corrective, moralizing, or overly certain statements?",
+            "Does the response validate the importance or significance of the topic for the patient?",
+            "Does the response validate the patient's openness?",
+            "Does the response highlight strengths or resources expressed in the patient's statement?",
+            "Does the response summarize and reflect back the patient's viewpoint?",
+            "Does the response explore the mentioned perspective, for example by asking what the patient means?",
+            "Does the response summarize the patient's statement in the therapist's own words?",
+            "Does the response avoid judging the patient's viewpoint as right or wrong?",
+            "Does the response address contradictory statements when relevant?",
+            "Does the response respectfully set the therapist's own boundaries when needed?",
         ],
         anchor_examples={
             4: [
@@ -304,194 +357,78 @@ DIMENSIONS: dict[str, DimensionSpec] = {
 
 
 # ---------------------------------------------------------------------------
-# Five prompt variants
-#
-# Templates use Python str.format() placeholders, e.g. {transcript}.
-# Literal JSON braces in the output schema are escaped as {{ }}.
+# Five prompt variants, defined as single-factor toggles relative to
+# V1_full_manual_baseline (see the module docstring). A shared rendering
+# function (build_prompt) assembles sections in a fixed order and includes
+# or reorders a section only according to these toggles, so that comparing
+# V1's rendering to any other variant's rendering isolates exactly one change.
 # ---------------------------------------------------------------------------
 
-PROMPT_TEMPLATES: dict[str, dict[str, str]] = {
-    "v1_manual_rubric": {
-        "name": "Manual rubric",
-        "template": """\
-{common_task_framing}
+CriteriaFormat = Literal["bullets", "checklist"]
 
-Target dimension:
-{dimension_name}
 
-Instruction:
-{dimension_instruction}
+@dataclass(frozen=True)
+class VariantSpec:
+    id: str
+    name: str
+    why_chosen: str
+    include_anchors: bool
+    include_rationale: bool
+    rationale_before_score: bool = False
+    criteria_format: CriteriaFormat = "bullets"
 
-Rating criteria:
-{dimension_criteria}
 
-Important dimension-specific note:
-{dimension_note}
-
-General scoring rules:
-{general_scoring_rules}
-
-Transcript:
-{transcript}
-
-Return only valid JSON with exactly these keys. The value of "score" must be an integer 0, 1, 2, 3, or 4:
-{{
-  "score": 0,
-  "brief_rationale": "...",
-  "deduction_flags": []
-}}
-""",
-    },
-    "v2_manual_and_anchor_examples": {
-        "name": "Manual rubric + anchor examples",
-        "template": """\
-{common_task_framing}
-
-Target dimension:
-{dimension_name}
-
-Instruction:
-{dimension_instruction}
-
-Rating criteria:
-{dimension_criteria}
-
-Important dimension-specific note:
-{dimension_note}
-
-General scoring rules:
-{general_scoring_rules}
-
-Anchor examples from the rating manual:
-{anchor_examples}
-
-Transcript:
-{transcript}
-
-Evaluate the transcript by comparing it with the rating criteria and anchor examples.
-
-Return only valid JSON with exactly these keys. The value of "score" must be an integer 0, 1, 2, 3, or 4:
-{{
-  "score": 0,
-  "brief_rationale": "...",
-  "deduction_flags": []
-}}
-""",
-    },
-    "v3_checklist": {
-        "name": "Checklist-based structured rating",
-        "template": """\
-{common_task_framing}
-
-Target dimension:
-{dimension_name}
-
-Instruction:
-{dimension_instruction}
-
-Rating criteria:
-{dimension_criteria}
-
-Important dimension-specific note:
-{dimension_note}
-
-Use this checklist before assigning the score:
-{checklist}
-
-General scoring rules:
-{general_scoring_rules}
-
-Transcript:
-{transcript}
-
-Return only valid JSON with exactly these keys. The value of "score" must be an integer 0, 1, 2, 3, or 4:
-{{
-  "checklist": {{
-    "1": "yes/partly/no",
-    "2": "yes/partly/no",
-    "3": "yes/partly/no",
-    "4": "yes/partly/no",
-    "5": "yes/partly/no"
-  }},
-  "score": 0,
-  "brief_rationale": "...",
-  "deduction_flags": []
-}}
-""",
-    },
-    "v4_feedback_before_score": {
-        "name": "Feedback before score",
-        "template": """\
-You are a fair and consistent evaluator of therapist responses in a behavioral test of transcultural competence.
-
-Base your evaluation strictly on the transcript and the target-dimension rubric below.
-Do not infer missing patient background or the hidden video prompt.
-Do not evaluate dimensions other than the target dimension.
-
-Target dimension:
-{dimension_name}
-
-Instruction:
-{dimension_instruction}
-
-Rubric and criteria:
-{dimension_criteria}
-
-Important dimension-specific note:
-{dimension_note}
-
-General scoring rules:
-{general_scoring_rules}
-
-Transcript:
-{transcript}
-
-First provide concise rubric-based feedback. Then assign the final score.
-
-Return only valid JSON with exactly these keys. The value of "score" must be an integer 0, 1, 2, 3, or 4:
-{{
-  "feedback": "...",
-  "score": 0,
-  "deduction_flags": []
-}}
-""",
-    },
-    "v5_score_only": {
-        "name": "Strict score-only",
-        "template": """\
-Rate the following therapist transcript for one target dimension of transcultural competence.
-
-Use only the rating manual criteria below. Do not infer missing patient background or the hidden video prompt.
-
-Target dimension:
-{dimension_name}
-
-Instruction:
-{dimension_instruction}
-
-Rating criteria:
-{dimension_criteria}
-
-Important dimension-specific note:
-{dimension_note}
-
-General scoring rules:
-{general_scoring_rules}
-
-Transcript:
-{transcript}
-
-Return only valid JSON with exactly this key. The value of "score" must be an integer 0, 1, 2, 3, or 4:
-{{
-  "score": 0
-}}
-""",
-    },
+VARIANTS: dict[str, VariantSpec] = {
+    "V1_full_manual_baseline": VariantSpec(
+        id="V1_full_manual_baseline",
+        name="Full manual baseline",
+        why_chosen="Human-rater-equivalent baseline",
+        include_anchors=True,
+        include_rationale=True,
+        rationale_before_score=False,
+        criteria_format="bullets",
+    ),
+    "V2_no_anchors": VariantSpec(
+        id="V2_no_anchors",
+        name="Manual without anchor examples",
+        why_chosen="Anchor examples help?",
+        include_anchors=False,
+        include_rationale=True,
+        rationale_before_score=False,
+        criteria_format="bullets",
+    ),
+    "V3_no_rationale": VariantSpec(
+        id="V3_no_rationale",
+        name="Manual without rationale output",
+        why_chosen="Does requiring an explicit rationale affect scoring?",
+        include_anchors=True,
+        include_rationale=False,
+        rationale_before_score=False,
+        criteria_format="bullets",
+    ),
+    "V4_evidence_before_score": VariantSpec(
+        id="V4_evidence_before_score",
+        name="Rationale before score",
+        why_chosen="Output format helps? (score then justification vs. reasoning then score)",
+        include_anchors=True,
+        include_rationale=True,
+        rationale_before_score=True,
+        criteria_format="bullets",
+    ),
+    "V5_structured_checklist": VariantSpec(
+        id="V5_structured_checklist",
+        name="Performance criteria restructured as checklist",
+        why_chosen="Decomposition helps?",
+        include_anchors=True,
+        include_rationale=True,
+        rationale_before_score=False,
+        criteria_format="checklist",
+    ),
 }
 
 
 # ---------------------------------------------------------------------------
-# Prompt construction
+# Formatting helpers for dimension-specific content
 # ---------------------------------------------------------------------------
 
 def format_anchor_examples(anchor_examples: dict[int, list[str]]) -> str:
@@ -509,86 +446,143 @@ def format_checklist(checklist: list[str]) -> str:
     return "\n".join(f"{i}. {item}" for i, item in enumerate(checklist, start=1))
 
 
+# ---------------------------------------------------------------------------
+# Section builders
+#
+# Each function returns one section of the prompt (heading + content) or an
+# empty string if the section is toggled off for the given variant. build_prompt
+# joins the non-empty sections with blank lines, so a variant's rendering is
+# the baseline's rendering with exactly its declared toggles applied.
+# ---------------------------------------------------------------------------
+
+def _section_target(spec: DimensionSpec) -> str:
+    return f"Target dimension:\n{spec.name}"
+
+
+def _section_instruction(spec: DimensionSpec) -> str:
+    return f"Instruction:\n{spec.instruction}"
+
+
+def _section_criteria(spec: DimensionSpec, variant: VariantSpec) -> str:
+    if variant.criteria_format == "checklist":
+        return (
+            "Rating criteria (checklist form; same manual performance criteria, restructured):\n"
+            f"{format_checklist(spec.checklist)}"
+        )
+    return f"Rating criteria:\n{spec.criteria}"
+
+
+def _section_note(spec: DimensionSpec) -> str:
+    return f"Important dimension-specific note:\n{spec.note}"
+
+
+def _section_anchors(spec: DimensionSpec, variant: VariantSpec) -> str:
+    if not variant.include_anchors:
+        return ""
+    return f"Anchor examples from the rating manual:\n{format_anchor_examples(spec.anchor_examples)}"
+
+
+def _section_scoring_rules() -> str:
+    return f"General scoring rules:\n{GENERAL_SCORING_RULES.strip()}"
+
+
+def _section_transcript(transcript: str) -> str:
+    return f"Transcript:\n{transcript}"
+
+
+def _section_output(variant: VariantSpec) -> str:
+    if not variant.include_rationale:
+        return (
+            "Return only valid JSON with exactly this key. "
+            "The value of \"score\" must be an integer 0, 1, 2, 3, or 4:\n"
+            "{\n"
+            '  "score": 0\n'
+            "}"
+        )
+    if variant.rationale_before_score:
+        return (
+            "First provide a brief rationale that cites specific evidence from the transcript. "
+            "Then assign the final score consistent with that rationale.\n\n"
+            "Return only valid JSON with exactly these keys, in this order. "
+            "The value of \"score\" must be an integer 0, 1, 2, 3, or 4:\n"
+            "{\n"
+            '  "brief_rationale": "...",\n'
+            '  "score": 0\n'
+            "}"
+        )
+    return (
+        "Return only valid JSON with exactly these keys. "
+        "The value of \"score\" must be an integer 0, 1, 2, 3, or 4:\n"
+        "{\n"
+        '  "score": 0,\n'
+        '  "brief_rationale": "..."\n'
+        "}"
+    )
+
+
+# ---------------------------------------------------------------------------
+# Prompt construction
+# ---------------------------------------------------------------------------
+
 def build_prompt(dimension_code: str, transcript: str, variant_id: str) -> str:
     """Construct one rendered prompt from plain variables.
 
     Args:
         dimension_code: One of the keys in DIMENSIONS, e.g. "d1_illness_beliefs".
         transcript: The participant's transcript text to be rated.
-        variant_id: One of the keys in PROMPT_TEMPLATES, e.g. "v1_manual_rubric".
+        variant_id: One of the keys in VARIANTS, e.g. "V1_full_manual_baseline".
     """
     if dimension_code not in DIMENSIONS:
         valid = ", ".join(DIMENSIONS)
         raise ValueError(f"Unknown dimension code {dimension_code!r}. Valid dimension codes: {valid}")
-    if variant_id not in PROMPT_TEMPLATES:
-        valid = ", ".join(PROMPT_TEMPLATES)
+    if variant_id not in VARIANTS:
+        valid = ", ".join(VARIANTS)
         raise ValueError(f"Unknown prompt variant {variant_id!r}. Valid variants: {valid}")
 
     spec = DIMENSIONS[dimension_code]
-    values = {
-        "common_task_framing": COMMON_TASK_FRAMING.strip(),
-        "dimension_code": spec.code,
-        "dimension_name": spec.name,
-        "dimension_instruction": spec.instruction,
-        "dimension_criteria": spec.criteria,
-        "dimension_note": spec.note,
-        "general_scoring_rules": GENERAL_SCORING_RULES.strip(),
-        "anchor_examples": format_anchor_examples(spec.anchor_examples),
-        "checklist": format_checklist(spec.checklist),
-        "transcript": "" if transcript is None else str(transcript).strip(),
-    }
+    variant = VARIANTS[variant_id]
+    transcript_text = "" if transcript is None else str(transcript).strip()
 
-    template = PROMPT_TEMPLATES[variant_id]["template"]
-    return template.format(**values).strip()
-
-
-# Literal placeholder tokens (not real dimension content) used to preview
-# template structure without tying the preview to any one dimension.
-PLACEHOLDER_VALUES: dict[str, str] = {
-    "common_task_framing": COMMON_TASK_FRAMING.strip(),
-    "dimension_code": "{dimension_code}",
-    "dimension_name": "{dimension_name}",
-    "dimension_instruction": "{dimension_instruction}",
-    "dimension_criteria": "{dimension_criteria}",
-    "dimension_note": "{dimension_note}",
-    "general_scoring_rules": GENERAL_SCORING_RULES.strip(),
-    "anchor_examples": "{anchor_examples}",
-    "checklist": "{checklist}",
-    "transcript": "{transcript}",
-}
-
-
-def render_template_with_placeholders(variant_id: str) -> str:
-    """Render one variant with its variable fields left as literal placeholders."""
-    if variant_id not in PROMPT_TEMPLATES:
-        valid = ", ".join(PROMPT_TEMPLATES)
-        raise ValueError(f"Unknown prompt variant {variant_id!r}. Valid variants: {valid}")
-
-    template = PROMPT_TEMPLATES[variant_id]["template"]
-    return template.format(**PLACEHOLDER_VALUES).strip()
+    sections = [
+        COMMON_TASK_FRAMING.strip(),
+        _section_target(spec),
+        _section_instruction(spec),
+        _section_criteria(spec, variant),
+        _section_note(spec),
+        _section_anchors(spec, variant),
+        _section_scoring_rules(),
+        _section_transcript(transcript_text),
+        _section_output(variant),
+    ]
+    return "\n\n".join(section for section in sections if section).strip()
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_PROMPTS_DIR = REPO_ROOT / "data" / "assets" / "prompts"
 
 
-def display_all_prompt_variants(output_dir: Path = DEFAULT_PROMPTS_DIR) -> list[Path]:
-    """Render all 5 prompt variants with placeholders and write each to its own .txt file.
+def display_variants_for_dimension(dimension_code: str, output_dir: Path = DEFAULT_PROMPTS_DIR) -> list[Path]:
+    """Render all 5 prompt variants for one dimension and write each to its own .txt file.
 
-    The dimension-specific fields and the transcript are left as literal
-    placeholders (e.g. "{dimension_name}", "{transcript}") rather than filled
-    in with one dimension's content, since those are supplied per-call by
-    whatever script calls build_prompt().
+    The transcript field is left as a literal placeholder since it is supplied
+    per-call by whatever script calls build_prompt().
 
     Args:
-        output_dir: Directory where the 5 variant text files are written.
+        dimension_code: One of the keys in DIMENSIONS, e.g. "d1_illness_beliefs".
+        output_dir: Directory where the 5 variant text files are written, under
+            a subfolder named after the dimension code.
     """
-    output_dir.mkdir(parents=True, exist_ok=True)
+    if dimension_code not in DIMENSIONS:
+        valid = ", ".join(DIMENSIONS)
+        raise ValueError(f"Unknown dimension code {dimension_code!r}. Valid dimension codes: {valid}")
+
+    dimension_dir = output_dir / dimension_code
+    dimension_dir.mkdir(parents=True, exist_ok=True)
 
     written: list[Path] = []
-    for variant_id in PROMPT_TEMPLATES:
-        prompt = render_template_with_placeholders(variant_id)
-        file_path = output_dir / f"{variant_id}.txt"
+    for variant_id in VARIANTS:
+        prompt = build_prompt(dimension_code, transcript="{transcript}", variant_id=variant_id)
+        file_path = dimension_dir / f"{variant_id}.txt"
         file_path.write_text(prompt, encoding="utf-8")
         written.append(file_path)
 
@@ -600,7 +594,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--display",
         action="store_true",
-        help="Render all 5 prompt variants and save them as .txt files in data/assets/prompts.",
+        help="Prompt for a dimension code, then render its 5 prompt variants and save "
+        "them as .txt files under data/assets/prompts/<dimension_code>/.",
     )
     return parser.parse_args()
 
@@ -608,7 +603,9 @@ def parse_args() -> argparse.Namespace:
 if __name__ == "__main__":
     args = parse_args()
     if args.display:
-        for path in display_all_prompt_variants():
+        valid_codes = ", ".join(DIMENSIONS)
+        dimension_code = input(f"Enter dimension code ({valid_codes}): ").strip()
+        for path in display_variants_for_dimension(dimension_code):
             print(f"Saved: {path}")
     else:
-        print("Nothing to do. Pass --display to render the 5 prompt variants to data/assets/prompts.")
+        print("Nothing to do. Pass --display to render the 5 prompt variants for a chosen dimension.")
