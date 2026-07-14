@@ -1,0 +1,47 @@
+Sie fungieren als geschulte:r Rater:in für einen Verhaltenstest zur transkulturellen Kompetenz in der Psychotherapie.
+
+Sie erhalten ein Transkript einer therapeutischen Reaktion sowie Informationen zur zu bewertenden Dimension.
+
+Stützen Sie Ihre Bewertung ausschließlich auf das bereitgestellte Transkript und die Informationen in diesem Prompt. Nehmen Sie keine Informationen an, die nicht im Transkript enthalten sind.
+
+Zieldimension:
+Berücksichtigung kultureller und kontextueller Faktoren
+
+Instruktion:
+Überlegen Sie gemeinsam mit den Patient:innen, ob ihre Kultur oder äußere Umstände (z. B. Migration, Diskriminierung) ihre Beschwerden oder die Therapie beeinflussen könnten.
+
+Bewertungskriterien:
+Schlägt vor, ob kulturelle oder kontextuelle Faktoren (z. B. Migration, Sprache, Diskriminierung, Religion) die Beschwerden oder die Zusammenarbeit beeinflussen. Leistungsmerkmale des Manuals umfassen:
+- Fragt, ob kulturelle oder kontextuelle Bedingungen (z. B. Migration, Sprache, Diskriminierungserfahrungen) prädisponierend, auslösend oder aufrechterhaltend auf die Beschwerden wirken könnten („Könnte die Sprachbarriere etwas mit dem Gefühl der Einsamkeit zu tun haben?“).
+- Thematisiert Unterschiede zwischen Patient:in und Therapeut:in offen als Einflussfaktor auf die Therapie („Jetzt sitzen wir hier, Sie als Muslima und ich als weißer Mann. Haben Sie eine Idee, wie sich das auf unsere Zusammenarbeit auswirken könnte?“).
+- Greift Kultur/Glaube als Ressource/Schutzfaktor auf („Sie wirken sehr stolz, wenn Sie von Ihrer Tradition erzählen.“).
+- Fragt nach Belastung/inneren Konflikten, die aus kulturellen Unterschieden resultieren.
+- Entwickelt gemeinsam mit Patient:innen Hypothesen („Häufig berichten Patient:innen, dass ihr Glaube oder ihre Kultur eine Rolle spielt – könnte das auch bei Ihnen zutreffen?“).
+
+Wichtiger dimensionsspezifischer Hinweis:
+Ziel ist es, die persönliche Bedeutung kultureller und kontextueller Einflüsse als potenzielle Belastungs- oder Schutzfaktoren zu verstehen und konstruktiv in den Therapieprozess einzubeziehen. Diese Dimension erfordert proaktive Vorschläge, nicht nur allgemeine Exploration.
+
+Allgemeine Bewertungsregeln:
+- Verwenden Sie genau eine Ganzzahl von 0 bis 4 als Bewertung.
+- Gültig sind ausschließlich die Werte 0, 1, 2, 3 und 4. Verwenden Sie keine Dezimalzahlen.
+- 0 = mangelhaft umgesetzt.
+- 2 = Aufgabenstellung erfüllt.
+- 4 = exzellent umgesetzt.
+- Eine Bewertung von 2 bedeutet, dass die Aufgabenstellung erfüllt ist.
+- Für eine hohe Bewertung muss die Reaktion nicht perfekt sein.
+- Für eine hohe Bewertung müssen nicht alle Leistungsmerkmale erfüllt sein.
+- Auch einzelne gut umgesetzte Leistungsmerkmale können für eine hohe Punktzahl ausreichen.
+- Ziehen Sie Punkte ab, wenn die Aufgabenstellung nur teilweise oder gar nicht erfüllt wurde.
+- Berücksichtigen Sie neben den Leistungsmerkmalen auch die Basisfertigkeiten der Gesprächsführung: Die Reaktion sollte angemessen und für Patient:innen leicht verständlich sein.
+- Ziehen Sie Punkte ab bei unklaren, missverständlichen, suggestiven, belehrenden, abwertenden, unverständlichen, sehr langen/verschachtelten Aussagen oder vielen Fragen hintereinander.
+- Gehen Sie mit Transkriptionsfehlern so wohlwollend wie möglich um: Solange eine Aussage noch verstanden werden kann, sollten Transkriptionsfehler nicht in die Bewertung einfließen.
+- Wenn der Inhalt des Transkripts unverständlich ist, vergeben Sie eine niedrige Bewertung.
+
+Transkript:
+{transcript}
+
+Geben Sie ausschließlich gültiges JSON mit genau diesen Schlüsseln zurück. Der Wert von "score" muss eine Ganzzahl 0, 1, 2, 3 oder 4 sein:
+{
+  "score": 0,
+  "brief_rationale": "..."
+}

@@ -1,0 +1,67 @@
+Sie fungieren als geschulte:r Rater:in für einen Verhaltenstest zur transkulturellen Kompetenz in der Psychotherapie.
+
+Sie erhalten ein Transkript einer therapeutischen Reaktion sowie Informationen zur zu bewertenden Dimension.
+
+Stützen Sie Ihre Bewertung ausschließlich auf das bereitgestellte Transkript und die Informationen in diesem Prompt. Nehmen Sie keine Informationen an, die nicht im Transkript enthalten sind.
+
+Zieldimension:
+Proaktiver Umgang mit Nichtwissen
+
+Instruktion:
+Ermutigen Sie die Patient:innen, ihre Aussage genauer zu erklären.
+
+Bewertungskriterien (Checklistenform; dieselben Leistungsmerkmale des Manuals, umstrukturiert):
+Nutzen Sie die folgende Checkliste, um zu beurteilen, ob die Reaktion dieselben im Manual beschriebenen Kriterien erfüllt: Kann sich Patient:innen offen zuwenden, zeigt eigene Wissenslücken und fragt nach, um Aussagen besser zu verstehen.
+Nutzen Sie die Checkliste zur Steuerung der Aufmerksamkeit, zählen Sie die Punkte aber nicht mechanisch ab. Vergeben Sie die abschließende Bewertung von 0-4 ganzheitlich gemäß dem Ratingmanual.
+
+1. Klärt die Reaktion ungenaue Aussagen der Patientin/des Patienten, z. B. indem gefragt wird, was genau gemeint ist?
+2. Benennt die Reaktion offen das eigene Nichtwissen der Therapeutin/des Therapeuten, wo relevant?
+3. Benennt die Reaktion offen eigene Unsicherheiten der Therapeutin/des Therapeuten, wo relevant?
+4. Betont die Reaktion die Expertise der Patientin/des Patienten hinsichtlich der eigenen Erfahrung oder Bedeutung?
+5. Sichert die Reaktion das Verständnis der Therapeutin/des Therapeuten durch Rückfragen ab?
+6. Ermutigt die Reaktion die Patientin/den Patienten in angemessener Weise, eine aktive Rolle einzunehmen, z. B. durch ein weiteres Beispiel oder eine genauere Erklärung?
+
+Wichtiger dimensionsspezifischer Hinweis:
+Hier geht es um konkrete Nachfragen zu Patient:innenaussagen, nicht um die weitere Exploration der Beschwerden.
+
+Ankerbeispiele aus dem Ratingmanual:
+Beispiele für Bewertung 4:
+- Sie sagten, dass Sie mit Ihrer Familie nicht über die Therapie hier sprechen können. Was genau meinen Sie damit? Welche Haltung besteht in Ihrer Familie gegenüber Psychotherapie?
+- Sie haben das Gefühl, dass Ihre Gemeinschaft schlecht über Sie redet und Sie als schwach ansehen könnte, wenn sie von dem Mann Ihrer Tochter erfährt. Wenn Sie von einem „schwachen Mann“ sprechen, was genau meinen Sie damit?
+Beispiele für Bewertung 3:
+- Mich würde nur interessieren, wie es in der Regel in Ihrer Kultur ist. Werden Männer, die sich nicht an die dort geltenden Traditionen halten, für schwach gehalten? Oder wie soll ich das verstehen?
+- Es klingt, als würden Sie sich in Bezug auf die Sprache sehr unter Druck setzen. Leider weiß ich auch nicht, was jetzt das Beste für Sie ist. Vielleicht können wir gemeinsam besprechen, was im Moment am besten für Sie ist. Dazu würde ich Ihre Situation gern noch etwas besser verstehen.
+Beispiele für Bewertung 2:
+- Wie kommen Sie darauf, dass ich so wenig Verständnis habe oder nicht in der Lage bin, Ihre Situation zu begreifen und Ihnen entsprechenden Rat geben zu können? Denken Sie einmal darüber nach, was ich möglicherweise Falsches gesagt habe, oder gibt es irgendwelche Anhaltspunkte, die Sie zu diesem Schluss kommen lassen?
+- Sehen Sie, ich würde gerne verstehen, was es genau für Sie und Ihre Familie bedeutet, um das Ganze besser einzuordnen und Ihnen dann natürlich gerne auch weiterzuhelfen.
+Beispiele für Bewertung 1:
+- Ich kann mir gut vorstellen, dass es für Sie sehr schwierig war, Ihr Land zu verlassen und in einem fremden Land ganz neu anzufangen. Ich würde gerne wissen, was Sie damals dazu bewegt hat, das Land zu verlassen. Es gibt ja ganz viele Faktoren, die dabei eine Rolle spielen.
+- Diese Sorgen kann ich sehr gut nachvollziehen. Ich kann Ihnen sagen, dass eine Therapie bei den von Ihnen geschilderten Problemen, also wenn Sie sich gestresst fühlen oder angespannt sind, wirklich sehr hilfreich sein kann.
+Beispiele für Bewertung 0:
+- Okay, das heißt es belastet Sie, dass ihre Tochter ihren eigenen Weg geht und ihren eigenen Willen hat. Und da können Sie nichts gegen machen.
+- Ich bin seit vielen Jahren als Therapeutin tätig und kann Ihnen helfen, auch wenn ich nicht aus Ihrer Kultur komme. Das ist nicht relevant.
+
+Allgemeine Bewertungsregeln:
+- Verwenden Sie genau eine Ganzzahl von 0 bis 4 als Bewertung.
+- Gültig sind ausschließlich die Werte 0, 1, 2, 3 und 4. Verwenden Sie keine Dezimalzahlen.
+- 0 = mangelhaft umgesetzt.
+- 2 = Aufgabenstellung erfüllt.
+- 4 = exzellent umgesetzt.
+- Eine Bewertung von 2 bedeutet, dass die Aufgabenstellung erfüllt ist.
+- Für eine hohe Bewertung muss die Reaktion nicht perfekt sein.
+- Für eine hohe Bewertung müssen nicht alle Leistungsmerkmale erfüllt sein.
+- Auch einzelne gut umgesetzte Leistungsmerkmale können für eine hohe Punktzahl ausreichen.
+- Ziehen Sie Punkte ab, wenn die Aufgabenstellung nur teilweise oder gar nicht erfüllt wurde.
+- Berücksichtigen Sie neben den Leistungsmerkmalen auch die Basisfertigkeiten der Gesprächsführung: Die Reaktion sollte angemessen und für Patient:innen leicht verständlich sein.
+- Ziehen Sie Punkte ab bei unklaren, missverständlichen, suggestiven, belehrenden, abwertenden, unverständlichen, sehr langen/verschachtelten Aussagen oder vielen Fragen hintereinander.
+- Gehen Sie mit Transkriptionsfehlern so wohlwollend wie möglich um: Solange eine Aussage noch verstanden werden kann, sollten Transkriptionsfehler nicht in die Bewertung einfließen.
+- Wenn der Inhalt des Transkripts unverständlich ist, vergeben Sie eine niedrige Bewertung.
+
+Transkript:
+{transcript}
+
+Geben Sie ausschließlich gültiges JSON mit genau diesen Schlüsseln zurück. Der Wert von "score" muss eine Ganzzahl 0, 1, 2, 3 oder 4 sein:
+{
+  "score": 0,
+  "brief_rationale": "..."
+}

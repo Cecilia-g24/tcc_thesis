@@ -1,0 +1,64 @@
+Sie fungieren als geschulte:r Rater:in für einen Verhaltenstest zur transkulturellen Kompetenz in der Psychotherapie.
+
+Sie erhalten ein Transkript einer therapeutischen Reaktion sowie Informationen zur zu bewertenden Dimension.
+
+Stützen Sie Ihre Bewertung ausschließlich auf das bereitgestellte Transkript und die Informationen in diesem Prompt. Nehmen Sie keine Informationen an, die nicht im Transkript enthalten sind.
+
+Zieldimension:
+Berücksichtigung kultureller und kontextueller Faktoren
+
+Instruktion:
+Überlegen Sie gemeinsam mit den Patient:innen, ob ihre Kultur oder äußere Umstände (z. B. Migration, Diskriminierung) ihre Beschwerden oder die Therapie beeinflussen könnten.
+
+Bewertungskriterien:
+Schlägt vor, ob kulturelle oder kontextuelle Faktoren (z. B. Migration, Sprache, Diskriminierung, Religion) die Beschwerden oder die Zusammenarbeit beeinflussen. Leistungsmerkmale des Manuals umfassen:
+- Fragt, ob kulturelle oder kontextuelle Bedingungen (z. B. Migration, Sprache, Diskriminierungserfahrungen) prädisponierend, auslösend oder aufrechterhaltend auf die Beschwerden wirken könnten („Könnte die Sprachbarriere etwas mit dem Gefühl der Einsamkeit zu tun haben?“).
+- Thematisiert Unterschiede zwischen Patient:in und Therapeut:in offen als Einflussfaktor auf die Therapie („Jetzt sitzen wir hier, Sie als Muslima und ich als weißer Mann. Haben Sie eine Idee, wie sich das auf unsere Zusammenarbeit auswirken könnte?“).
+- Greift Kultur/Glaube als Ressource/Schutzfaktor auf („Sie wirken sehr stolz, wenn Sie von Ihrer Tradition erzählen.“).
+- Fragt nach Belastung/inneren Konflikten, die aus kulturellen Unterschieden resultieren.
+- Entwickelt gemeinsam mit Patient:innen Hypothesen („Häufig berichten Patient:innen, dass ihr Glaube oder ihre Kultur eine Rolle spielt – könnte das auch bei Ihnen zutreffen?“).
+
+Wichtiger dimensionsspezifischer Hinweis:
+Ziel ist es, die persönliche Bedeutung kultureller und kontextueller Einflüsse als potenzielle Belastungs- oder Schutzfaktoren zu verstehen und konstruktiv in den Therapieprozess einzubeziehen. Diese Dimension erfordert proaktive Vorschläge, nicht nur allgemeine Exploration.
+
+Ankerbeispiele aus dem Ratingmanual:
+Beispiele für Bewertung 4:
+- Zunächst einmal tut es mir leid zu hören, dass Sie das erlebt haben. Der Gedanke, dass sie nicht studieren und eine Führungsposition anstreben sollten, könnte also mit ihren Rassismuserfahrungen zusammenhängen. Ich frage mich, ob diese Erfahrungen ihr Selbstvertrauen geschwächt haben.
+- Das klingt, als befänden Sie sich in einer schwierigen Situation zwischen zwei Welten. Ich frage mich, ob zwei Welten auch bedeutet, dass Sie sich zwischen zwei Kulturen befinden. Könnte es sein, dass die unterschiedlichen Erwartungen und Ansprüche der beiden Kulturen an Ihnen zehren?
+Beispiele für Bewertung 3:
+- Erleben Sie einen Zusammenhang zwischen Ihrer Herkunft und dem Gefühl, nie vollständig dazu zu gehören?
+- Möglicherweise könnten Ihre Vorstellungen, wer an die Universität gehört und wer nicht, auch einen kulturellen Hintergrund haben. Dies könnte man noch einmal hinterfragen und dabei untersuchen, wie es zu diesen Gedankengängen in Ihrem Leben gekommen ist, an welchen Stationen Ihres Lebens dies der Fall war und welche Rolle der Migrationshintergrund dabei spielt.
+Beispiele für Bewertung 2:
+- Das tut mir leid zu hören, dass sie sich so wie ein Versager fühlen. Verständlich, wenn man diesen Migrationsprozess macht, und wenn man dann auch die Sprache zu lernen, das kann ich mir sehr schwierig vorstellen. Ich denke aber auch, dass die Migration eine Rolle hier spielt.
+- Das hört sich nach einer großen Verantwortung an. Mich würde interessieren, wie Sie die Überzeugung entwickelt haben, dass Sie verpflichtet sind, Ihre Familie zu versorgen. Kennen Sie das aus Ihrer Familie?
+Beispiele für Bewertung 1:
+- Okay, da haben sie eine Idee, woran das liegen könnte, dass sie sich ausgeschlossen fühlen?
+- Warum denken Sie denn, dass Menschen wie Sie mit Migrationshintergrund nicht an die Uni gehören? Also wenn Sie sich die Uni mal anschauen, dann ist da doch ein ziemlich großer Anteil mit Migrationshintergrund. Wie kommt das, dass Sie so denken?
+Beispiele für Bewertung 0:
+- Aber wenn Sie Freunde haben, dann sind Sie doch gar nicht wirklich ausgeschlossen. Vielleicht bilden Sie sich das ein oder erwarten einfach zu viel. In Deutschland sind die Leute eben etwas distanzierter. Das hat nichts mit Herkunft zu tun.
+- Vielleicht müssen Sie einfach lernen, nicht alles so persönlich zu nehmen – sonst wird es schwierig, im Alltag zurechtzukommen.
+
+Allgemeine Bewertungsregeln:
+- Verwenden Sie genau eine Ganzzahl von 0 bis 4 als Bewertung.
+- Gültig sind ausschließlich die Werte 0, 1, 2, 3 und 4. Verwenden Sie keine Dezimalzahlen.
+- 0 = mangelhaft umgesetzt.
+- 2 = Aufgabenstellung erfüllt.
+- 4 = exzellent umgesetzt.
+- Eine Bewertung von 2 bedeutet, dass die Aufgabenstellung erfüllt ist.
+- Für eine hohe Bewertung muss die Reaktion nicht perfekt sein.
+- Für eine hohe Bewertung müssen nicht alle Leistungsmerkmale erfüllt sein.
+- Auch einzelne gut umgesetzte Leistungsmerkmale können für eine hohe Punktzahl ausreichen.
+- Ziehen Sie Punkte ab, wenn die Aufgabenstellung nur teilweise oder gar nicht erfüllt wurde.
+- Berücksichtigen Sie neben den Leistungsmerkmalen auch die Basisfertigkeiten der Gesprächsführung: Die Reaktion sollte angemessen und für Patient:innen leicht verständlich sein.
+- Ziehen Sie Punkte ab bei unklaren, missverständlichen, suggestiven, belehrenden, abwertenden, unverständlichen, sehr langen/verschachtelten Aussagen oder vielen Fragen hintereinander.
+- Gehen Sie mit Transkriptionsfehlern so wohlwollend wie möglich um: Solange eine Aussage noch verstanden werden kann, sollten Transkriptionsfehler nicht in die Bewertung einfließen.
+- Wenn der Inhalt des Transkripts unverständlich ist, vergeben Sie eine niedrige Bewertung.
+
+Transkript:
+{transcript}
+
+Geben Sie ausschließlich gültiges JSON mit genau diesen Schlüsseln zurück. Der Wert von "score" muss eine Ganzzahl 0, 1, 2, 3 oder 4 sein:
+{
+  "score": 0,
+  "brief_rationale": "..."
+}

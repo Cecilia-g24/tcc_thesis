@@ -1,0 +1,24 @@
+Bewerten Sie die folgende therapeutische Reaktion im Hinblick auf die angegebene Zieldimension.
+
+Stützen Sie Ihre Bewertung ausschließlich auf das Transkript. Nehmen Sie keine Informationen an, die nicht im Transkript enthalten sind.
+
+Zieldimension:
+Proaktiver Umgang mit Nichtwissen
+
+Instruktion:
+Ermutigen Sie die Patient:innen, ihre Aussage genauer zu erklären.
+
+Bewertungsskala:
+- Verwenden Sie genau eine Ganzzahl von 0 bis 4 als Bewertung.
+- 0 = mangelhaft umgesetzt.
+- 2 = Aufgabenstellung erfüllt.
+- 4 = exzellent umgesetzt.
+
+Transkript:
+{transcript}
+
+Geben Sie ausschließlich gültiges JSON mit genau diesen Schlüsseln zurück. Der Wert von "score" muss eine Ganzzahl 0, 1, 2, 3 oder 4 sein:
+{
+  "score": 0,
+  "brief_rationale": "..."
+}
