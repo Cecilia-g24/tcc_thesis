@@ -25,18 +25,26 @@ Designed for resumable, auditable development runs:
 - failed/missing calls are retried by default on rerun
 - strict parsing/validation of integer scores in {0, 1, 2, 3, 4}
 
+Each --model-alias gets its own subfolder under --output-dir (results.csv, results.jsonl,
+interaction_log.jsonl), so multiple local models can be run into the same output-dir
+without colliding.
+
 Default condition:
-    English transcript + English prompt
+    German transcript + German prompt (override --input-csv/--text-col for English)
 
 Run from the repo root or from this script directory:
     python scripts/approach_2_llm/llm_assessment_local.py
 
+-m/--model-path accepts a bare model folder name (resolved against the sibling models/
+folder) and -a/--model-alias defaults to that folder name, so you don't need to type
+either "../models/" or repeat the model name as an alias.
+
 Useful options:
     python scripts/approach_2_llm/llm_assessment_local.py --n-per-dimension 20 --sample-mode random --random-state 42
     python scripts/approach_2_llm/llm_assessment_local.py --n-per-dimension 0     # run all rows
-    python scripts/approach_2_llm/llm_assessment_local.py --model-path ../models/qwen3_30b_instruct
-    python scripts/approach_2_llm/llm_assessment_local.py --model-path ../models/qwen3_235b_instruct --tensor-parallel-size 8
-    python scripts/approach_2_llm/llm_assessment_local.py --backend transformers --model-path ../models/llammlein_1b
+    python scripts/approach_2_llm/llm_assessment_local.py -m qwen3_30b_instruct -v V1_full_manual_baseline
+    python scripts/approach_2_llm/llm_assessment_local.py -m qwen3_235b_instruct --tensor-parallel-size 8
+    python scripts/approach_2_llm/llm_assessment_local.py --backend transformers -m llammlein_1b
     python scripts/approach_2_llm/llm_assessment_local.py --overwrite            # ignore previous results
 """
 
@@ -60,8 +68,8 @@ from tqdm import tqdm
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 try:
-    # Works when this file is placed next to en_prompt_construction.py.
-    from en_prompt_construction import VARIANTS, build_prompt
+    # Works when this file is placed next to de_prompt_construction.py.
+    from de_prompt_construction import VARIANTS, build_prompt
 except ModuleNotFoundError:
     # Works when running from unusual working directories.
     import sys
@@ -69,19 +77,18 @@ except ModuleNotFoundError:
     THIS_DIR = Path(__file__).resolve().parent
     if str(THIS_DIR) not in sys.path:
         sys.path.insert(0, str(THIS_DIR))
-    from en_prompt_construction import VARIANTS, build_prompt
+    from de_prompt_construction import VARIANTS, build_prompt
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-DEFAULT_INPUT_CSV = REPO_ROOT / "data" / "data_clean" / "01_csvs_for_liwc_manual_input" / "full_dataset_en.csv"
-DEFAULT_OUTPUT_DIR = REPO_ROOT / "results" / "approach2" / "en_text_en_prompt_results_local"
+DEFAULT_INPUT_CSV = REPO_ROOT / "data" / "data_clean" / "01_csvs_for_liwc_manual_input" / "full_dataset_de.csv"
+DEFAULT_OUTPUT_DIR = REPO_ROOT / "results" / "approach2" / "de_text_de_prompt_results"
 
 # In the VS Code server view, models/ and tcc/ appear to be sibling folders.
 # Override this with --model-path if your model is elsewhere.
 DEFAULT_MODEL_PATH = REPO_ROOT.parent / "models" / "qwen3_30b_instruct"
-DEFAULT_MODEL_ALIAS = "qwen3_30b_instruct_local"
 
-DEFAULT_TEXT_COL = "text_en"
+DEFAULT_TEXT_COL = "text"
 DEFAULT_N_PER_DIMENSION = 20
 DEFAULT_SAMPLE_MODE = "random"  # random | first | all
 DEFAULT_RANDOM_STATE = 42
@@ -126,6 +133,13 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--sample-mode", choices=["random", "first", "all"], default=DEFAULT_SAMPLE_MODE)
     parser.add_argument("--random-state", type=int, default=DEFAULT_RANDOM_STATE)
+    parser.add_argument(
+        "-v", "--variants",
+        type=str,
+        default="all",
+        help="Comma-separated list of prompt variant ids to run (e.g. V1_full_manual_baseline), "
+             f"or 'all' (default) to run every variant. Choices: {sorted(VARIANTS)}.",
+    )
 
     parser.add_argument(
         "--backend",
@@ -138,16 +152,19 @@ def parse_args() -> argparse.Namespace:
              "--load-in-4bit/--load-in-8bit.",
     )
     parser.add_argument(
-        "--model-path",
-        type=Path,
-        default=Path(os.getenv("LOCAL_MODEL_PATH", DEFAULT_MODEL_PATH)),
-        help="Path to the local Hugging Face model directory.",
+        "-m", "--model-path",
+        type=str,
+        default=os.getenv("LOCAL_MODEL_PATH", str(DEFAULT_MODEL_PATH)),
+        help="Path to the local Hugging Face model directory. A bare name with no slash "
+             "(e.g. qwen3_32b) is resolved against the sibling models/ folder "
+             f"({DEFAULT_MODEL_PATH.parent}/<name>).",
     )
     parser.add_argument(
-        "--model-alias",
+        "-a", "--model-alias",
         type=str,
-        default=os.getenv("LOCAL_MODEL_ALIAS", DEFAULT_MODEL_ALIAS),
-        help="Short name used in output filenames and result rows.",
+        default=os.getenv("LOCAL_MODEL_ALIAS"),
+        help="Short name used for the output subfolder and result rows. Defaults to the "
+             "--model-path folder name.",
     )
     parser.add_argument("--temperature", type=float, default=DEFAULT_TEMPERATURE)
     parser.add_argument("--top-p", type=float, default=DEFAULT_TOP_P)
@@ -240,6 +257,26 @@ def parse_args() -> argparse.Namespace:
     args = parser.parse_args()
     if args.backend == "vllm" and (args.load_in_4bit or args.load_in_8bit):
         parser.error("--load-in-4bit/--load-in-8bit are transformers-only; use --quantization for the vllm backend.")
+
+    # A bare name with no path separator (e.g. "qwen3_32b") is shorthand for the sibling
+    # models/ folder, so --model-path doesn't need the "../models/" prefix every time.
+    model_path = Path(args.model_path)
+    if os.sep not in args.model_path and "/" not in args.model_path and not model_path.exists():
+        model_path = DEFAULT_MODEL_PATH.parent / args.model_path
+    args.model_path = model_path
+
+    if args.model_alias is None:
+        args.model_alias = args.model_path.name
+
+    if args.variants.strip().lower() == "all":
+        args.variants = sorted(VARIANTS)
+    else:
+        requested = [v.strip() for v in args.variants.split(",") if v.strip()]
+        unknown = [v for v in requested if v not in VARIANTS]
+        if unknown:
+            parser.error(f"Unknown --variants {unknown}; choices are {sorted(VARIANTS)}.")
+        args.variants = requested
+
     return args
 
 
@@ -422,11 +459,12 @@ def should_skip_existing(record: dict[str, Any], keep_failed: bool) -> bool:
 
 
 def resolve_output_paths(args: argparse.Namespace) -> tuple[Path, Path, Path, str]:
-    args.output_dir.mkdir(parents=True, exist_ok=True)
     safe_model_name = sanitize_filename(args.model_alias)
-    csv_path = args.output_dir / f"dev_results_{safe_model_name}.csv"
-    jsonl_path = args.output_dir / f"dev_results_{safe_model_name}.jsonl"
-    log_path = args.output_dir / f"dev_interaction_log_{safe_model_name}.jsonl"
+    model_dir = args.output_dir / safe_model_name
+    model_dir.mkdir(parents=True, exist_ok=True)
+    csv_path = model_dir / "results.csv"
+    jsonl_path = model_dir / "results.jsonl"
+    log_path = model_dir / "interaction_log.jsonl"
     resolved_model_path = str(args.model_path.expanduser().resolve())
     return csv_path, jsonl_path, log_path, resolved_model_path
 
@@ -437,7 +475,7 @@ def prepare_pending_calls(
     csv_path: Path,
 ) -> tuple[dict[tuple[str, str, str], dict[str, Any]], list[tuple[pd.Series, str]]]:
     """Plan all (row, variant) calls, load resumable prior results, and return what's left to run."""
-    calls: list[tuple[pd.Series, str]] = [(row, variant_id) for _, row in df.iterrows() for variant_id in VARIANTS]
+    calls: list[tuple[pd.Series, str]] = [(row, variant_id) for _, row in df.iterrows() for variant_id in args.variants]
     planned_keys = {(str(row["id"]), str(row["dimension"]), str(variant_id)) for row, variant_id in calls}
 
     # Load previous results, but keep only rows that belong to the currently planned
