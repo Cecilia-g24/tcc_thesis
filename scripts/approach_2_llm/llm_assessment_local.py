@@ -46,7 +46,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 
 try:
     # Works when this file is placed next to prompt_construction.py.
-    from prompt_construction import PROMPT_TEMPLATES, build_prompt
+    from prompt_construction import VARIANTS, build_prompt
 except ModuleNotFoundError:
     # Works when running from unusual working directories.
     import sys
@@ -54,7 +54,7 @@ except ModuleNotFoundError:
     THIS_DIR = Path(__file__).resolve().parent
     if str(THIS_DIR) not in sys.path:
         sys.path.insert(0, str(THIS_DIR))
-    from prompt_construction import PROMPT_TEMPLATES, build_prompt
+    from prompt_construction import VARIANTS, build_prompt
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -563,7 +563,7 @@ def run_assessment(args: argparse.Namespace) -> tuple[Path, Path, Path]:
     calls: list[tuple[pd.Series, str]] = [
         (row, variant_id)
         for _, row in df.iterrows()
-        for variant_id in PROMPT_TEMPLATES
+        for variant_id in VARIANTS
     ]
     planned_keys = {
         (str(row["id"]), str(row["dimension"]), str(variant_id))

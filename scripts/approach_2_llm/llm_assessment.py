@@ -40,7 +40,7 @@ from dotenv import load_dotenv
 from openai import OpenAI
 from tqdm import tqdm
 
-from prompt_construction import PROMPT_TEMPLATES, build_prompt
+from prompt_construction import VARIANTS, build_prompt
 
 load_dotenv()
 
@@ -311,7 +311,7 @@ def run_assessment(args: argparse.Namespace) -> tuple[Path, Path, Path]:
     calls: list[tuple[pd.Series, str]] = [
         (row, variant_id)
         for _, row in df.iterrows()
-        for variant_id in PROMPT_TEMPLATES
+        for variant_id in VARIANTS
     ]
     planned_keys = {
         (str(row["id"]), str(row["dimension"]), str(variant_id))

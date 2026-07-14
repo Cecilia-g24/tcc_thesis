@@ -465,8 +465,11 @@ def _section_instruction(spec: DimensionSpec) -> str:
 
 def _section_criteria(spec: DimensionSpec, variant: VariantSpec) -> str:
     if variant.criteria_format == "checklist":
+        criteria_intro = spec.criteria.split("Manual performance criteria include:", 1)[0].strip()
         return (
             "Rating criteria (checklist form; same manual performance criteria, restructured):\n"
+            f"Use the following checklist to assess whether the response meets the same criteria described in the manual: {criteria_intro}\n"
+            "Use the checklist to guide attention, but do not mechanically count items. Assign the final 0-4 score holistically according to the rating manual.\n\n"
             f"{format_checklist(spec.checklist)}"
         )
     return f"Rating criteria:\n{spec.criteria}"
