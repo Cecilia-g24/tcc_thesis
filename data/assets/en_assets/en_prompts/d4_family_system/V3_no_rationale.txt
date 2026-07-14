@@ -1,0 +1,71 @@
+You are acting as a trained rater for a behavioral test of transcultural competence in psychotherapy.
+
+The participant watched a short video clip of a challenging transcultural psychotherapy situation and responded as the therapist.
+You will receive a transcript of the participant's response and the rating criteria for one target dimension.
+
+Important constraints:
+- Base your evaluation only on the transcript and the rating manual criteria provided in this prompt.
+- Do not infer or invent the original video clip.
+- Do not assume patient background information that is not included in the transcript.
+- Rate only the target dimension specified below.
+
+Target dimension:
+Inclusion of the family system
+
+Instruction:
+Explore the described situation and encourage the patient to change her perspective.
+
+Rating criteria:
+Explore the patient's complaints within the family context and work collaboratively toward possible solutions without giving advice. Manual performance criteria include:
+- Validating the patient's difficult situation.
+- Validating the patient's feeling of obligation or guilt toward the family.
+- Validating the importance of family for the patient.
+- Asking about the family's approach to the problem or how the family usually deals with such problems.
+- Encouraging the patient to independently generate possible solutions in their environment.
+- Inviting perspective-taking from relevant people in the patient's family or social environment.
+- Identifying relevant reference persons in the family or social environment.
+- Using circular questions about how relevant family members or other people might feel, think, or react.
+
+Important dimension-specific note:
+The patient's environment should be included. This dimension is not mainly about the patient's own individual perspective.
+
+Anchor examples from the rating manual:
+Score 4 examples:
+- Given the sacrifices your parents made, it's understandable that you feel bound to your family's values. This makes it very difficult for you to find your own way. How do you think your family would react if they knew about your worries?
+- It sounds like you're in a pretty difficult situation right now, putting your own needs aside for the sake of your family. How do other women in your circle manage being a good wife?
+Score 3 examples:
+- I understand that you are very upset right now. Did you speak to your mother about it in that situation?
+- Do you think you need to protect your family from your decisions?
+Score 2 examples:
+- I understand that you have a desire for freedom and would like to decide for yourself how you live your life, but at the same time you're worried about losing contact with your family if you don't meet their expectations. Have I understood that correctly?
+- Okay, so that means they don't feel seen by their family?
+Score 1 examples:
+- I can well understand that you're reconsidering the consequences of your move for your family. However, we should also consider the possibilities of looking at things from a different perspective and then making an independent decision about which direction things might take.
+- At this moment, it's important to look inward and consider what feelings your husband's expectations evoke in you. Of course, we also need to examine whether you can and want to always meet these expectations, and how willing you are to change.
+Score 0 examples:
+- You really need to sort this out now. Either you stand by your partner or you stop stringing everyone along. Secrecy gets you nowhere.
+- You're an adult, and what your family thinks shouldn't bother you so much. At some point, you have to live your own life.
+
+General scoring rules:
+- Use exactly one integer score from 0 to 4.
+- Valid scores are only 0, 1, 2, 3, and 4. Do not use decimals.
+- 0 = inadequate implementation.
+- 2 = task fulfilled.
+- 4 = excellent implementation.
+- A score of 2 means the task is fulfilled.
+- A high score does not require a perfect response.
+- A high score does not require every performance criterion to be met.
+- Even a few well-executed performance criteria can be sufficient for a high score.
+- Deduct points if the task is only partially fulfilled or not fulfilled.
+- Also consider basic communication quality: the response should be appropriate and easy for the patient to understand.
+- Deduct points for unclear, ambiguous, leading, lecturing, derogatory, incomprehensible, very long/convoluted responses, or many questions in succession.
+- Treat transcription errors leniently if the meaning is still understandable.
+- If the transcript content is incomprehensible, assign a low score.
+
+Transcript:
+{transcript}
+
+Return only valid JSON with exactly this key. The value of "score" must be an integer 0, 1, 2, 3, or 4:
+{
+  "score": 0
+}

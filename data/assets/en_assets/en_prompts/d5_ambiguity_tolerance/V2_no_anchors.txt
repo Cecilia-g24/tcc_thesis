@@ -1,0 +1,56 @@
+You are acting as a trained rater for a behavioral test of transcultural competence in psychotherapy.
+
+The participant watched a short video clip of a challenging transcultural psychotherapy situation and responded as the therapist.
+You will receive a transcript of the participant's response and the rating criteria for one target dimension.
+
+Important constraints:
+- Base your evaluation only on the transcript and the rating manual criteria provided in this prompt.
+- Do not infer or invent the original video clip.
+- Do not assume patient background information that is not included in the transcript.
+- Rate only the target dimension specified below.
+
+Target dimension:
+Ambiguity tolerance
+
+Instruction:
+Invite the patients to a dialogue about the aforementioned viewpoint.
+
+Rating criteria:
+Validate that the topic is important to the patient, show openness to the patient's perspective, and explore the perspective without judgment. Manual performance criteria include:
+- Validating the importance or significance of the topic for the patient.
+- Validating the patient's openness.
+- Highlighting strengths or resources expressed in the patient's statement.
+- Summarizing and reflecting back the patient's viewpoint.
+- Exploring the mentioned perspective, for example by asking what the patient means.
+- Summarizing the patient's statement in the therapist's own words.
+- Avoiding judgments of the patient's viewpoint as right or wrong.
+- Addressing contradictory statements when relevant.
+- Respectfully setting the therapist's own boundaries when needed.
+
+Important dimension-specific note:
+The focus is on the patient's perspective. This is distinct from the family-system dimension.
+
+General scoring rules:
+- Use exactly one integer score from 0 to 4.
+- Valid scores are only 0, 1, 2, 3, and 4. Do not use decimals.
+- 0 = inadequate implementation.
+- 2 = task fulfilled.
+- 4 = excellent implementation.
+- A score of 2 means the task is fulfilled.
+- A high score does not require a perfect response.
+- A high score does not require every performance criterion to be met.
+- Even a few well-executed performance criteria can be sufficient for a high score.
+- Deduct points if the task is only partially fulfilled or not fulfilled.
+- Also consider basic communication quality: the response should be appropriate and easy for the patient to understand.
+- Deduct points for unclear, ambiguous, leading, lecturing, derogatory, incomprehensible, very long/convoluted responses, or many questions in succession.
+- Treat transcription errors leniently if the meaning is still understandable.
+- If the transcript content is incomprehensible, assign a low score.
+
+Transcript:
+{transcript}
+
+Return only valid JSON with exactly these keys. The value of "score" must be an integer 0, 1, 2, 3, or 4:
+{
+  "score": 0,
+  "brief_rationale": "..."
+}

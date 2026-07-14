@@ -1,4 +1,4 @@
-### to preview the 5 prompt variants for one dimension, run this script with the --display
+### to preview the 6 prompt variants for one dimension, run this script with the --display
 ### flag and enter a dimension code when prompted. The prompts will be saved as .txt files
 ### in data/assets/prompts/<dimension_code>/.
 # python prompt_construction.py --display
@@ -22,11 +22,18 @@ The variant_id passed to build_prompt must be one of:
     V3_no_rationale
     V4_evidence_before_score
     V5_structured_checklist
+    V6_minimal_natural
 
-Each variant is defined as a single-factor change relative to V1_full_manual_baseline
+V1-V5 are each defined as a single-factor change relative to V1_full_manual_baseline
 (see VariantSpec / VARIANTS below), not as an independently written template. This keeps
 the ablation clean: rendering V1 and any other variant for the same dimension differs
 in exactly the one toggle that variant is meant to test, and nowhere else.
+
+V6_minimal_natural is the exception: it drops the rating manual's detailed performance
+criteria and dimension-specific note entirely, keeping only the general task framing
+(from the rating manual's introductory "Rating manual" section), the plain-language
+instruction given to participants, and the general scoring rules. It tests whether the
+manual's specific, structured criteria are needed at all, versus general task info alone.
 
 Usage (from an assessment script):
     from prompt_construction import build_prompt
@@ -54,9 +61,7 @@ GENERAL_SCORING_RULES = """\
 - Use exactly one integer score from 0 to 4.
 - Valid scores are only 0, 1, 2, 3, and 4. Do not use decimals.
 - 0 = inadequate implementation.
-- 1 = very limited implementation.
 - 2 = task fulfilled.
-- 3 = good implementation.
 - 4 = excellent implementation.
 - A score of 2 means the task is fulfilled.
 - A high score does not require a perfect response.
@@ -77,7 +82,6 @@ You will receive a transcript of the participant's response and the rating crite
 
 Important constraints:
 - Base your evaluation only on the transcript and the rating manual criteria provided in this prompt.
-- Do not use the human rater scores, even if they are available elsewhere in the dataset.
 - Do not infer or invent the original video clip.
 - Do not assume patient background information that is not included in the transcript.
 - Rate only the target dimension specified below.
@@ -357,11 +361,12 @@ DIMENSIONS: dict[str, DimensionSpec] = {
 
 
 # ---------------------------------------------------------------------------
-# Five prompt variants, defined as single-factor toggles relative to
-# V1_full_manual_baseline (see the module docstring). A shared rendering
-# function (build_prompt) assembles sections in a fixed order and includes
-# or reorders a section only according to these toggles, so that comparing
-# V1's rendering to any other variant's rendering isolates exactly one change.
+# Six prompt variants. V1-V5 are single-factor toggles relative to
+# V1_full_manual_baseline; V6 drops the manual's specific criteria and note
+# (see the module docstring). A shared rendering function (build_prompt)
+# assembles sections in a fixed order and includes, excludes, or reorders a
+# section only according to these toggles, so that comparing V1's rendering
+# to any other variant's rendering isolates exactly the intended change(s).
 # ---------------------------------------------------------------------------
 
 CriteriaFormat = Literal["bullets", "checklist"]
@@ -376,6 +381,8 @@ class VariantSpec:
     include_rationale: bool
     rationale_before_score: bool = False
     criteria_format: CriteriaFormat = "bullets"
+    include_criteria: bool = True
+    include_note: bool = True
 
 
 VARIANTS: dict[str, VariantSpec] = {
@@ -424,6 +431,17 @@ VARIANTS: dict[str, VariantSpec] = {
         rationale_before_score=False,
         criteria_format="checklist",
     ),
+    "V6_minimal_natural": VariantSpec(
+        id="V6_minimal_natural",
+        name="General task info, no manual-specific instructions",
+        why_chosen="Specific instructions help?",
+        include_anchors=False,
+        include_rationale=True,
+        rationale_before_score=False,
+        criteria_format="bullets",
+        include_criteria=False,
+        include_note=False,
+    ),
 }
 
 
@@ -464,6 +482,8 @@ def _section_instruction(spec: DimensionSpec) -> str:
 
 
 def _section_criteria(spec: DimensionSpec, variant: VariantSpec) -> str:
+    if not variant.include_criteria:
+        return ""
     if variant.criteria_format == "checklist":
         criteria_intro = spec.criteria.split("Manual performance criteria include:", 1)[0].strip()
         return (
@@ -475,7 +495,9 @@ def _section_criteria(spec: DimensionSpec, variant: VariantSpec) -> str:
     return f"Rating criteria:\n{spec.criteria}"
 
 
-def _section_note(spec: DimensionSpec) -> str:
+def _section_note(spec: DimensionSpec, variant: VariantSpec) -> str:
+    if not variant.include_note:
+        return ""
     return f"Important dimension-specific note:\n{spec.note}"
 
 
@@ -551,7 +573,7 @@ def build_prompt(dimension_code: str, transcript: str, variant_id: str) -> str:
         _section_target(spec),
         _section_instruction(spec),
         _section_criteria(spec, variant),
-        _section_note(spec),
+        _section_note(spec, variant),
         _section_anchors(spec, variant),
         _section_scoring_rules(),
         _section_transcript(transcript_text),
@@ -565,14 +587,14 @@ DEFAULT_PROMPTS_DIR = REPO_ROOT / "data" / "assets" / "prompts"
 
 
 def display_variants_for_dimension(dimension_code: str, output_dir: Path = DEFAULT_PROMPTS_DIR) -> list[Path]:
-    """Render all 5 prompt variants for one dimension and write each to its own .txt file.
+    """Render all prompt variants for one dimension and write each to its own .txt file.
 
     The transcript field is left as a literal placeholder since it is supplied
     per-call by whatever script calls build_prompt().
 
     Args:
         dimension_code: One of the keys in DIMENSIONS, e.g. "d1_illness_beliefs".
-        output_dir: Directory where the 5 variant text files are written, under
+        output_dir: Directory where the variant text files are written, under
             a subfolder named after the dimension code.
     """
     if dimension_code not in DIMENSIONS:
@@ -597,7 +619,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--display",
         action="store_true",
-        help="Prompt for a dimension code, then render its 5 prompt variants and save "
+        help="Prompt for a dimension code, then render its prompt variants and save "
         "them as .txt files under data/assets/prompts/<dimension_code>/.",
     )
     return parser.parse_args()
@@ -611,4 +633,4 @@ if __name__ == "__main__":
         for path in display_variants_for_dimension(dimension_code):
             print(f"Saved: {path}")
     else:
-        print("Nothing to do. Pass --display to render the 5 prompt variants for a chosen dimension.")
+        print("Nothing to do. Pass --display to render the prompt variants for a chosen dimension.")
