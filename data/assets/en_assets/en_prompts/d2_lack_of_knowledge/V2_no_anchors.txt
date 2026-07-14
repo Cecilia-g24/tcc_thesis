@@ -1,52 +1,47 @@
-You are acting as a trained rater for a behavioral test of transcultural competence in psychotherapy.
+You are a trained rater for a behavioral test of transcultural competence in psychotherapy.
 
-The participant watched a short video clip of a challenging transcultural psychotherapy situation and responded as the therapist.
-You will receive a transcript of the participant's response and the rating criteria for one target dimension.
+You will receive a transcript of a therapeutic response and information about the dimension to be assessed.
 
-Important constraints:
-- Base your evaluation only on the transcript and the rating manual criteria provided in this prompt.
-- Do not infer or invent the original video clip.
-- Do not assume patient background information that is not included in the transcript.
-- Rate only the target dimension specified below.
+Base your rating solely on the provided transcript and the information in this prompt. Do not assume information that is not included in the transcript.
 
 Target dimension:
-Proactively dealing with not knowing
+Proactively address gaps in knowledge
 
 Instruction:
-Encourage the patients to explain their statement in more detail.
+Encourage patients to explain their statement in greater detail.
 
-Rating criteria:
-Approach the patient openly, reveal gaps in the therapist's own knowledge, and ask questions to better understand the patient's statements. Manual performance criteria include:
-- Clarifying imprecise patient statements, for example by asking what exactly the patient means.
-- Openly admitting the therapist's own lack of knowledge when relevant.
-- Openly acknowledging the therapist's own uncertainty when relevant.
-- Emphasizing the patient's expertise about their own experience or meaning.
-- Checking the therapist's understanding by asking clarifying questions.
-- Appropriately encouraging the patient to take an active role, for example by giving another example or explaining the statement further.
+Evaluation criteria:
+Engages openly with patients, acknowledges gaps in the therapist's own knowledge, and asks questions to better understand patients' statements. The manual's performance indicators include:
+- Clarifies vague patient statements ("What exactly do you mean by ...?", "When you say '...', what exactly do you mean by that term?").
+- Openly acknowledges a lack of knowledge ("That is new to me; I would like to understand it better.").
+- Openly acknowledges uncertainty ("Unfortunately, I also do not know what would be best right now; let us consider together what might be helpful for you.").
+- Emphasizes the patient's expertise ("You are the expert ...").
+- Checks the therapist's understanding by asking follow-up questions ("I want to make sure I understand you correctly.").
+- Appropriately encourages the patient to take an active role ("It would help me greatly if you could give me another example.").
 
 Important dimension-specific note:
-This dimension concerns specific follow-up questions regarding patient statements, not general exploration of complaints.
+This dimension concerns specific follow-up questions about patients' statements, not further exploration of their symptoms.
 
-General scoring rules:
-- Use exactly one integer score from 0 to 4.
-- Valid scores are only 0, 1, 2, 3, and 4. Do not use decimals.
-- 0 = inadequate implementation.
+General evaluation rules:
+- Use exactly one integer from 0 to 4 as the rating.
+- Only the values 0, 1, 2, 3, and 4 are valid. Do not use decimal values.
+- 0 = inadequately implemented.
 - 2 = task fulfilled.
-- 4 = excellent implementation.
-- A score of 2 means the task is fulfilled.
-- A high score does not require a perfect response.
-- A high score does not require every performance criterion to be met.
-- Even a few well-executed performance criteria can be sufficient for a high score.
-- Deduct points if the task is only partially fulfilled or not fulfilled.
-- Also consider basic communication quality: the response should be appropriate and easy for the patient to understand.
-- Deduct points for unclear, ambiguous, leading, lecturing, derogatory, incomprehensible, very long/convoluted responses, or many questions in succession.
-- Treat transcription errors leniently if the meaning is still understandable.
-- If the transcript content is incomprehensible, assign a low score.
+- 4 = excellently implemented.
+- A rating of 2 means that the task has been fulfilled.
+- The response does not need to be perfect to receive a high rating.
+- Not all performance criteria need to be fulfilled for a high rating.
+- Even individual criteria that are implemented well may be sufficient for a high rating.
+- Deduct points if the task is only partially fulfilled or not fulfilled at all.
+- In addition to the performance criteria, consider basic conversational skills: the response should be appropriate and easy for patients to understand.
+- Deduct points for unclear, potentially confusing, leading, lecturing, derogatory, or incomprehensible statements; very long or convoluted statements; or many questions asked in succession.
+- Treat transcription errors as leniently as possible. As long as a statement remains understandable, transcription errors should not affect the rating.
+- If the transcript content is incomprehensible, assign a low rating.
 
 Transcript:
 {transcript}
 
-Return only valid JSON with exactly these keys. The value of "score" must be an integer 0, 1, 2, 3, or 4:
+Return only valid JSON with exactly these keys. The value of "score" must be an integer: 0, 1, 2, 3, or 4:
 {
   "score": 0,
   "brief_rationale": "..."

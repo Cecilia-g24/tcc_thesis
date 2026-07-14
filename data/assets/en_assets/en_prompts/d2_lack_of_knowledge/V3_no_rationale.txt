@@ -1,69 +1,64 @@
-You are acting as a trained rater for a behavioral test of transcultural competence in psychotherapy.
+You are a trained rater for a behavioral test of transcultural competence in psychotherapy.
 
-The participant watched a short video clip of a challenging transcultural psychotherapy situation and responded as the therapist.
-You will receive a transcript of the participant's response and the rating criteria for one target dimension.
+You will receive a transcript of a therapeutic response and information about the dimension to be assessed.
 
-Important constraints:
-- Base your evaluation only on the transcript and the rating manual criteria provided in this prompt.
-- Do not infer or invent the original video clip.
-- Do not assume patient background information that is not included in the transcript.
-- Rate only the target dimension specified below.
+Base your rating solely on the provided transcript and the information in this prompt. Do not assume information that is not included in the transcript.
 
 Target dimension:
-Proactively dealing with not knowing
+Proactively address gaps in knowledge
 
 Instruction:
-Encourage the patients to explain their statement in more detail.
+Encourage patients to explain their statement in greater detail.
 
-Rating criteria:
-Approach the patient openly, reveal gaps in the therapist's own knowledge, and ask questions to better understand the patient's statements. Manual performance criteria include:
-- Clarifying imprecise patient statements, for example by asking what exactly the patient means.
-- Openly admitting the therapist's own lack of knowledge when relevant.
-- Openly acknowledging the therapist's own uncertainty when relevant.
-- Emphasizing the patient's expertise about their own experience or meaning.
-- Checking the therapist's understanding by asking clarifying questions.
-- Appropriately encouraging the patient to take an active role, for example by giving another example or explaining the statement further.
+Evaluation criteria:
+Engages openly with patients, acknowledges gaps in the therapist's own knowledge, and asks questions to better understand patients' statements. The manual's performance indicators include:
+- Clarifies vague patient statements ("What exactly do you mean by ...?", "When you say '...', what exactly do you mean by that term?").
+- Openly acknowledges a lack of knowledge ("That is new to me; I would like to understand it better.").
+- Openly acknowledges uncertainty ("Unfortunately, I also do not know what would be best right now; let us consider together what might be helpful for you.").
+- Emphasizes the patient's expertise ("You are the expert ...").
+- Checks the therapist's understanding by asking follow-up questions ("I want to make sure I understand you correctly.").
+- Appropriately encourages the patient to take an active role ("It would help me greatly if you could give me another example.").
 
 Important dimension-specific note:
-This dimension concerns specific follow-up questions regarding patient statements, not general exploration of complaints.
+This dimension concerns specific follow-up questions about patients' statements, not further exploration of their symptoms.
 
 Anchor examples from the rating manual:
-Score 4 examples:
-- You said you can't talk to your family about the therapy here. What exactly do you mean by that? What is your family's attitude towards psychotherapy?
-- You feel that your community might speak ill of you and view you as weak if they find out about your daughter's husband. When you say 'weak man,' what exactly do you mean by that?
-Score 3 examples:
-- I'm just curious how things generally are in your culture. Are men who don't adhere to the prevailing traditions considered weak? Or how should I understand that?
-- It sounds like you're putting a lot of pressure on yourself regarding the language. Unfortunately, I don't know what the best course of action is for you right now. Perhaps we could discuss together what would be best for you at the moment. To do that, I'd like to understand your situation a little better.
-Score 2 examples:
-- How did you come to the conclusion that I have so little understanding or am unable to grasp your situation and give you appropriate advice? Consider what I might have said incorrectly, or are there any indications that lead you to this conclusion?
-- You see, I would like to understand exactly what this means for you and your family, in order to better understand the situation and then, of course, to be happy to help you further.
-Score 1 examples:
-- I can well imagine that it was very difficult for you to leave your country and start completely anew in a foreign one. I would like to know what motivated you to leave your country back then. There are, of course, many factors that play a role in such a decision.
-- I can completely understand these concerns. I can tell you that therapy can be very helpful for the problems you described, namely feeling stressed or tense.
-Score 0 examples:
-- Okay, so that means it bothers you that your daughter is going her own way and has her own will. And there's nothing you can do about it.
-- I have been working as a therapist for many years and can help you, even though I don't come from your culture. That's irrelevant.
+Examples for rating 4:
+- You said that you cannot talk to your family about being in therapy. What exactly do you mean by that? What is your family's attitude toward psychotherapy?
+- You feel that your community may speak badly about you and see you as weak if they learn about your daughter's husband. When you say 'a weak man,' what exactly do you mean?
+Examples for rating 3:
+- I would be interested to know how this is generally viewed in your culture. Are men who do not follow the traditions there considered weak? Or how should I understand that?
+- It sounds as though you place yourself under considerable pressure regarding the language. Unfortunately, I also do not know what would be best for you right now. Perhaps we can discuss together what would be best for you at the moment. To do so, I would like to understand your situation somewhat better.
+Examples for rating 2:
+- What makes you think that I have so little understanding or am unable to understand your situation and give you appropriate advice? Think about whether I may have said something wrong, or whether there are any indications that led you to this conclusion.
+- You see, I would like to understand exactly what this means for you and your family so that I can better place the situation and, of course, help you.
+Examples for rating 1:
+- I can imagine that it was very difficult for you to leave your country and start again in a foreign country. I would like to know what led you to leave the country at that time. Many different factors may have played a role.
+- I can understand these concerns very well. I can tell you that therapy can be very helpful for the problems you have described, such as feeling stressed or tense.
+Examples for rating 0:
+- Okay, so it bothers you that your daughter is going her own way and asserting her own will. And there is nothing you can do about that.
+- I have worked as a therapist for many years and can help you even though I do not come from your culture. That is not relevant.
 
-General scoring rules:
-- Use exactly one integer score from 0 to 4.
-- Valid scores are only 0, 1, 2, 3, and 4. Do not use decimals.
-- 0 = inadequate implementation.
+General evaluation rules:
+- Use exactly one integer from 0 to 4 as the rating.
+- Only the values 0, 1, 2, 3, and 4 are valid. Do not use decimal values.
+- 0 = inadequately implemented.
 - 2 = task fulfilled.
-- 4 = excellent implementation.
-- A score of 2 means the task is fulfilled.
-- A high score does not require a perfect response.
-- A high score does not require every performance criterion to be met.
-- Even a few well-executed performance criteria can be sufficient for a high score.
-- Deduct points if the task is only partially fulfilled or not fulfilled.
-- Also consider basic communication quality: the response should be appropriate and easy for the patient to understand.
-- Deduct points for unclear, ambiguous, leading, lecturing, derogatory, incomprehensible, very long/convoluted responses, or many questions in succession.
-- Treat transcription errors leniently if the meaning is still understandable.
-- If the transcript content is incomprehensible, assign a low score.
+- 4 = excellently implemented.
+- A rating of 2 means that the task has been fulfilled.
+- The response does not need to be perfect to receive a high rating.
+- Not all performance criteria need to be fulfilled for a high rating.
+- Even individual criteria that are implemented well may be sufficient for a high rating.
+- Deduct points if the task is only partially fulfilled or not fulfilled at all.
+- In addition to the performance criteria, consider basic conversational skills: the response should be appropriate and easy for patients to understand.
+- Deduct points for unclear, potentially confusing, leading, lecturing, derogatory, or incomprehensible statements; very long or convoluted statements; or many questions asked in succession.
+- Treat transcription errors as leniently as possible. As long as a statement remains understandable, transcription errors should not affect the rating.
+- If the transcript content is incomprehensible, assign a low rating.
 
 Transcript:
 {transcript}
 
-Return only valid JSON with exactly this key. The value of "score" must be an integer 0, 1, 2, 3, or 4:
+Return only valid JSON with exactly this key. The value of "score" must be an integer: 0, 1, 2, 3, or 4:
 {
   "score": 0
 }

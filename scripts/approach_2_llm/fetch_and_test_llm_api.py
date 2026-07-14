@@ -1,9 +1,9 @@
 """
 1. Fetch available models from NHR and GWDG providers via their /models endpoints.
-2. Save results to configs/api_models.json.
-3. Test connectivity for every model in that file.
+2. Test connectivity for every fetched model.
+3. Save only the models that passed the connectivity test to configs/api_models.json.
 
-Run from the repo root:  python src/approach2_llm/fetch_and_test_llm_models.py
+Run from the repo root:  python scripts/approach_2_llm/fetch_and_test_llm_api.py
 """
 
 from openai import OpenAI
@@ -29,8 +29,6 @@ PROVIDERS = {
 
 # Model ID substrings that identify non-chat models to skip
 EXCLUDE_KEYWORDS = {"embed", "bge-", "e5-", "ocr", "rerank", "whisper", "clip"}
-
-SKIP_KEYS = {"_comment", "_source"}
 
 TEST_MESSAGES = [
     {"role": "system", "content": "You are a helpful assistant."},
@@ -70,7 +68,7 @@ def save_models(api_models: dict[str, dict[str, str]]) -> None:
         output[provider_name] = {
             "_comment": (
                 f"{provider_name.upper()} models — auto-fetched {today}. "
-                "Embedding/non-chat models excluded."
+                "Embedding/non-chat and failed-connectivity models excluded."
             ),
             "_source": base.rstrip("/") + "/models",
             **models,
@@ -111,33 +109,24 @@ def test_model(provider_name: str, model_id: str) -> dict:
 
 
 def main() -> None:
-    # ── Step 1: fetch & save ───────────────────────────────────────────────────
+    # ── Step 1: fetch candidate models ────────────────────────────────────────
     print("=" * 60)
     print("Fetching available models from providers...")
     print("=" * 60)
-    api_models: dict[str, dict[str, str]] = {}
+    candidates: dict[str, dict[str, str]] = {}
     for provider_name in PROVIDERS:
-        api_models[provider_name] = fetch_models(provider_name)
-    save_models(api_models)
+        candidates[provider_name] = fetch_models(provider_name)
 
-    # ── Step 2: reload JSON as the single source of truth ─────────────────────
-    with open(MODELS_PATH, encoding="utf-8") as f:
-        api_models = json.load(f)
+    total = sum(len(v) for v in candidates.values())
+    print(f"\nTesting {total} candidate models across {len(candidates)} providers\n")
 
-    total = sum(
-        sum(1 for k in v if k not in SKIP_KEYS) for v in api_models.values()
-    )
-    print(f"Testing {total} models across {len(api_models)} providers\n")
-
-    # ── Step 3: test connectivity ──────────────────────────────────────────────
+    # ── Step 2: test connectivity for every candidate ─────────────────────────
     results: list[dict] = []
-    for provider_name, models in api_models.items():
+    for provider_name, models in candidates.items():
         print(f"{'=' * 60}")
         print(f"Provider: {provider_name.upper()}  |  {PROVIDERS[provider_name]['base_url']}")
         print(f"{'=' * 60}")
-        for key, model_id in models.items():
-            if key in SKIP_KEYS:
-                continue
+        for model_id in models:
             print(f"  {model_id} ...", end=" ", flush=True)
             r = test_model(provider_name, model_id)
             results.append(r)
@@ -148,10 +137,17 @@ def main() -> None:
                 print(f"FAIL ({r['latency_s']}s)")
                 print(f"    {r['error'][:200]}")
 
+    # ── Step 3: keep only working models and save ─────────────────────────────
+    working: dict[str, dict[str, str]] = {provider_name: {} for provider_name in PROVIDERS}
+    for r in results:
+        if r["status"] == "OK":
+            working[r["provider"]][r["model_id"]] = r["model_id"]
+    save_models(working)
+
     # ── Summary ───────────────────────────────────────────────────────────────
     print(f"\n{'=' * 60}")
     ok = sum(1 for r in results if r["status"] == "OK")
-    print(f"Summary: {ok}/{len(results)} models OK\n")
+    print(f"Summary: {ok}/{len(results)} models OK (only these were saved to {MODELS_PATH})\n")
     for r in results:
         mark = "OK  " if r["status"] == "OK" else "FAIL"
         print(f"  {mark}  [{r['provider']}] {r['model_id']:<55} {r['latency_s']}s")

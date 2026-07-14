@@ -1,70 +1,65 @@
-You are acting as a trained rater for a behavioral test of transcultural competence in psychotherapy.
+You are a trained rater for a behavioral test of transcultural competence in psychotherapy.
 
-The participant watched a short video clip of a challenging transcultural psychotherapy situation and responded as the therapist.
-You will receive a transcript of the participant's response and the rating criteria for one target dimension.
+You will receive a transcript of a therapeutic response and information about the dimension to be assessed.
 
-Important constraints:
-- Base your evaluation only on the transcript and the rating manual criteria provided in this prompt.
-- Do not infer or invent the original video clip.
-- Do not assume patient background information that is not included in the transcript.
-- Rate only the target dimension specified below.
+Base your rating solely on the provided transcript and the information in this prompt. Do not assume information that is not included in the transcript.
 
 Target dimension:
-Consideration of cultural and contextual factors
+Consider cultural and contextual factors
 
 Instruction:
-Discuss with the patients whether their culture or external circumstances, such as migration or discrimination, could influence their symptoms or therapy.
+Together with the patient, consider whether their culture or external circumstances, such as migration or discrimination, could influence their symptoms or the therapy.
 
-Rating criteria:
-Suggest whether cultural or contextual factors such as migration, language, discrimination, religion, or external circumstances could influence the patient's complaints, cooperation, or therapy. Manual performance criteria include:
-- Asking whether cultural or contextual conditions, such as migration, language, or discrimination, could predispose to, trigger, or maintain the complaints.
-- Openly addressing differences between patient and therapist as a possible influence on therapy.
-- Using culture or belief as a resource or protective factor when relevant.
-- Asking about stress or internal conflicts resulting from cultural differences.
-- Developing hypotheses together with the patient about whether culture, belief, migration, language, discrimination, religion, or other external circumstances influence complaints, cooperation, or therapy.
+Evaluation criteria:
+Suggests possible links between cultural or contextual factors, such as migration, language, discrimination, or religion, and the patient's symptoms or the therapeutic collaboration. The manual's performance indicators include:
+- Asks whether cultural or contextual conditions, such as migration, language, or experiences of discrimination, could predispose, trigger, or maintain the symptoms ("Could the language barrier be related to your feeling of loneliness?").
+- Openly addresses differences between the patient and therapist as a possible influence on therapy ("Here we are, you as a Muslim woman and I as a white man. Do you have an idea of how this might affect our work together?").
+- Addresses culture or faith as a resource or protective factor ("You seem very proud when you talk about your tradition.").
+- Asks about distress or internal conflicts resulting from cultural differences.
+- Develops hypotheses jointly with the patient ("Patients often report that their faith or culture plays a role. Could that also apply to you?").
 
 Important dimension-specific note:
-The goal is to understand the personal significance of cultural and contextual influences as possible stressors or protective factors and to integrate them constructively. This dimension requires proactive suggestions rather than only general exploration.
+The aim is to understand the personal meaning of cultural and contextual influences as potential stressors or protective factors and to integrate them constructively into the therapeutic process. This dimension requires proactively proposing possible influences rather than merely exploring them.
 
 Anchor examples from the rating manual:
-Score 4 examples:
-- First of all, I'm sorry to hear that you've experienced this. The idea that you shouldn't study and pursue a leadership position could therefore be related to your experiences of racism. I wonder if these experiences have weakened your self-confidence.
-- It sounds like you're in a difficult situation, caught between two worlds. I wonder if 'two worlds' also means you're caught between two cultures. Could it be that the differing expectations and demands of these two cultures are taking their toll on you?
-Score 3 examples:
-- Do you experience a connection between your origins and the feeling of never fully belonging?
-- Your ideas about who belongs at university and who doesn't might also have a cultural basis. This could be re-examined, exploring how these ideas developed in your life, at which stages this occurred, and what role your migration background plays.
-Score 2 examples:
-- I'm sorry to hear that they feel like failures. It's understandable, considering the migration process and the added challenge of learning the language; I can imagine that's very difficult. But I also think migration plays a role here.
-- That sounds like a huge responsibility. I'd be interested to know how you developed the conviction that you are obligated to provide for your family. Is that something you know from your own family?
-Score 1 examples:
-- Okay, so you have an idea why they might feel excluded?
-- Why do you think that people like you with a migration background don't belong at university? If you look at the university itself, you'll see that a fairly large proportion of students have a migration background. How come you think that way?
-Score 0 examples:
-- But if you have friends, then you're not really excluded. Maybe you're imagining it or simply expecting too much. People in Germany are just a bit more reserved. That has nothing to do with where you come from.
-- Perhaps you simply need to learn not to take everything so personally; otherwise it will be difficult to cope with everyday life.
+Examples for rating 4:
+- First of all, I am sorry to hear that you experienced this. The idea that you should not study or pursue a leadership position might therefore be related to your experiences of racism. I wonder whether these experiences have weakened your self-confidence.
+- It sounds as though you are in a difficult situation between two worlds. I wonder whether 'two worlds' also means that you are between two cultures. Could the different expectations and demands of the two cultures be wearing you down?
+Examples for rating 3:
+- Do you experience a connection between your background and the feeling that you never fully belong?
+- It is possible that your beliefs about who belongs at university and who does not also have a cultural background. We could examine this further and consider how these patterns of thought developed in your life, at which stages they occurred, and what role your migration background played.
+Examples for rating 2:
+- I am sorry to hear that you feel like a failure. It is understandable that going through migration and also learning the language can be very difficult. I also think that migration plays a role here.
+- That sounds like a great responsibility. I would be interested to know how you developed the belief that you are obligated to provide for your family. Is that something you know from your family?
+Examples for rating 1:
+- Okay, do you have an idea of what might be causing you to feel excluded?
+- Why do you think that people like you who have a migration background do not belong at university? If you look at the university, a fairly large proportion of people have a migration background. Why do you think that way?
+Examples for rating 0:
+- But if you have friends, then you are not really excluded. Perhaps you are imagining it or simply expecting too much. People in Germany are somewhat more distant. This has nothing to do with your background.
+- Perhaps you simply need to learn not to take everything so personally; otherwise, it will be difficult to cope with everyday life.
 
-General scoring rules:
-- Use exactly one integer score from 0 to 4.
-- Valid scores are only 0, 1, 2, 3, and 4. Do not use decimals.
-- 0 = inadequate implementation.
+General evaluation rules:
+- Use exactly one integer from 0 to 4 as the rating.
+- Only the values 0, 1, 2, 3, and 4 are valid. Do not use decimal values.
+- 0 = inadequately implemented.
 - 2 = task fulfilled.
-- 4 = excellent implementation.
-- A score of 2 means the task is fulfilled.
-- A high score does not require a perfect response.
-- A high score does not require every performance criterion to be met.
-- Even a few well-executed performance criteria can be sufficient for a high score.
-- Deduct points if the task is only partially fulfilled or not fulfilled.
-- Also consider basic communication quality: the response should be appropriate and easy for the patient to understand.
-- Deduct points for unclear, ambiguous, leading, lecturing, derogatory, incomprehensible, very long/convoluted responses, or many questions in succession.
-- Treat transcription errors leniently if the meaning is still understandable.
-- If the transcript content is incomprehensible, assign a low score.
+- 4 = excellently implemented.
+- A rating of 2 means that the task has been fulfilled.
+- The response does not need to be perfect to receive a high rating.
+- Not all performance criteria need to be fulfilled for a high rating.
+- Even individual criteria that are implemented well may be sufficient for a high rating.
+- Deduct points if the task is only partially fulfilled or not fulfilled at all.
+- In addition to the performance criteria, consider basic conversational skills: the response should be appropriate and easy for patients to understand.
+- Deduct points for unclear, potentially confusing, leading, lecturing, derogatory, or incomprehensible statements; very long or convoluted statements; or many questions asked in succession.
+- Treat transcription errors as leniently as possible. As long as a statement remains understandable, transcription errors should not affect the rating.
+- If the transcript content is incomprehensible, assign a low rating.
 
 Transcript:
 {transcript}
 
-First provide a brief rationale that cites specific evidence from the transcript. Then assign the final score consistent with that rationale.
+First provide a brief rationale based on specific evidence from the transcript. Then assign the final rating, ensuring that it is consistent with the rationale.
 
-Return only valid JSON with exactly these keys, in this order. The value of "score" must be an integer 0, 1, 2, 3, or 4:
+Return only valid JSON with exactly these keys, in this order. The value of "score" must be an integer: 0, 1, 2, 3, or 4:
 {
   "brief_rationale": "...",
   "score": 0

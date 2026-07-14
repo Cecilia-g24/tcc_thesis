@@ -1,54 +1,49 @@
-You are acting as a trained rater for a behavioral test of transcultural competence in psychotherapy.
+You are a trained rater for a behavioral test of transcultural competence in psychotherapy.
 
-The participant watched a short video clip of a challenging transcultural psychotherapy situation and responded as the therapist.
-You will receive a transcript of the participant's response and the rating criteria for one target dimension.
+You will receive a transcript of a therapeutic response and information about the dimension to be assessed.
 
-Important constraints:
-- Base your evaluation only on the transcript and the rating manual criteria provided in this prompt.
-- Do not infer or invent the original video clip.
-- Do not assume patient background information that is not included in the transcript.
-- Rate only the target dimension specified below.
+Base your rating solely on the provided transcript and the information in this prompt. Do not assume information that is not included in the transcript.
 
 Target dimension:
-Inclusion of the family system
+Involve the family system
 
 Instruction:
-Explore the described situation and encourage the patient to change her perspective.
+Explore the situation described and encourage the patient to consider another perspective.
 
-Rating criteria:
-Explore the patient's complaints within the family context and work collaboratively toward possible solutions without giving advice. Manual performance criteria include:
-- Validating the patient's difficult situation.
-- Validating the patient's feeling of obligation or guilt toward the family.
-- Validating the importance of family for the patient.
-- Asking about the family's approach to the problem or how the family usually deals with such problems.
-- Encouraging the patient to independently generate possible solutions in their environment.
-- Inviting perspective-taking from relevant people in the patient's family or social environment.
-- Identifying relevant reference persons in the family or social environment.
-- Using circular questions about how relevant family members or other people might feel, think, or react.
+Evaluation criteria:
+Explores the symptoms in the family context and works jointly with the patient to find solutions to difficulties without giving advice. The manual's performance indicators include:
+- Validates the patient's difficult situation.
+- Validates feelings of obligation or guilt toward the family ("I understand that you feel a great responsibility because of the sacrifices your parents made.").
+- Validates the importance of the family ("It sounds as though your family's support is very important to you.").
+- Asks how the family deals with problems in this context ("How does your family usually deal with problems like this?", "Does your family know about your problems?").
+- Encourages the patient to independently generate possible solutions within their environment ("Who in your family could support you?").
+- Attempts to adopt the perspective of relevant people ("What might help from the perspective of your family, friends, or other people in your social environment?").
+- Identifies relevant people ("You mention your sister particularly often; she seems to play an important role.").
+- Uses circular questions ("How do you think your father would feel if you told him that you ...?").
 
 Important dimension-specific note:
-The patient's environment should be included. This dimension is not mainly about the patient's own individual perspective.
+The patient's social environment should be included. This dimension is not about the patient's own perspective.
 
-General scoring rules:
-- Use exactly one integer score from 0 to 4.
-- Valid scores are only 0, 1, 2, 3, and 4. Do not use decimals.
-- 0 = inadequate implementation.
+General evaluation rules:
+- Use exactly one integer from 0 to 4 as the rating.
+- Only the values 0, 1, 2, 3, and 4 are valid. Do not use decimal values.
+- 0 = inadequately implemented.
 - 2 = task fulfilled.
-- 4 = excellent implementation.
-- A score of 2 means the task is fulfilled.
-- A high score does not require a perfect response.
-- A high score does not require every performance criterion to be met.
-- Even a few well-executed performance criteria can be sufficient for a high score.
-- Deduct points if the task is only partially fulfilled or not fulfilled.
-- Also consider basic communication quality: the response should be appropriate and easy for the patient to understand.
-- Deduct points for unclear, ambiguous, leading, lecturing, derogatory, incomprehensible, very long/convoluted responses, or many questions in succession.
-- Treat transcription errors leniently if the meaning is still understandable.
-- If the transcript content is incomprehensible, assign a low score.
+- 4 = excellently implemented.
+- A rating of 2 means that the task has been fulfilled.
+- The response does not need to be perfect to receive a high rating.
+- Not all performance criteria need to be fulfilled for a high rating.
+- Even individual criteria that are implemented well may be sufficient for a high rating.
+- Deduct points if the task is only partially fulfilled or not fulfilled at all.
+- In addition to the performance criteria, consider basic conversational skills: the response should be appropriate and easy for patients to understand.
+- Deduct points for unclear, potentially confusing, leading, lecturing, derogatory, or incomprehensible statements; very long or convoluted statements; or many questions asked in succession.
+- Treat transcription errors as leniently as possible. As long as a statement remains understandable, transcription errors should not affect the rating.
+- If the transcript content is incomprehensible, assign a low rating.
 
 Transcript:
 {transcript}
 
-Return only valid JSON with exactly these keys. The value of "score" must be an integer 0, 1, 2, 3, or 4:
+Return only valid JSON with exactly these keys. The value of "score" must be an integer: 0, 1, 2, 3, or 4:
 {
   "score": 0,
   "brief_rationale": "..."
