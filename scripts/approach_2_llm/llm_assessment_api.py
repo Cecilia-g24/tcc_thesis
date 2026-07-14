@@ -1,25 +1,29 @@
 """
-Run LLM-as-judge assessment on transcripts using prompts built by prompt_construction.py.
+Run LLM-as-judge assessment on transcripts using prompts built by de_prompt_construction.py.
 
-This version is designed for resumable, auditable development runs:
-- random fixed-seed dev sampling instead of taking the first rows
+Only the V1_full_manual_baseline prompt variant is used. By default, every transcript
+across all 5 dimensions in the input CSV is tested (not a dev subsample).
+
+This version is designed for resumable, auditable runs:
 - id + dimension + variant_id as the unique call key
 - immediate result saving after every call
 - resume support: successful calls are skipped on rerun
 - failed/missing calls are retried by default
 - exponential backoff for rate limits and transient API errors
 - strict parsing/validation of integer scores in {0, 1, 2, 3, 4}
+- per-call runtime and full interaction log (prompt, raw response, retry attempts)
 
 Default condition:
-    English transcript + English prompt
+    German transcript + German prompt (V1_full_manual_baseline), all rows, all 5 dimensions
 
 Run from the repo root or from this script directory:
-    python llm_assessment.py
+    python llm_assessment_api.py
 
 Useful options:
-    python llm_assessment.py --n-per-dimension 20 --sample-mode random --random-state 42
-    python llm_assessment.py --n-per-dimension 0     # run all rows
-    python llm_assessment.py --overwrite            # ignore previous results
+    python llm_assessment_api.py --n-per-dimension 20 --sample-mode random --random-state 42
+    python llm_assessment_api.py --overwrite            # ignore previous results
+    python llm_assessment_api.py --model glm-4.7        # run just this one model
+    python llm_assessment_api.py --all-models           # run every model in configs/api_models.json
 """
 
 from __future__ import annotations
@@ -40,21 +44,31 @@ from dotenv import load_dotenv
 from openai import OpenAI
 from tqdm import tqdm
 
-from prompt_construction import VARIANTS, build_prompt
+from de_prompt_construction import build_prompt
 
 load_dotenv()
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-DEFAULT_INPUT_CSV = REPO_ROOT / "data" / "data_clean" / "01_csvs_for_liwc_manual_input" / "full_dataset_en.csv"
-DEFAULT_OUTPUT_DIR = REPO_ROOT / "results" / "approach2" / "en_text_en_prompt_results"
+DEFAULT_INPUT_CSV = REPO_ROOT / "data" / "data_clean" / "01_csvs_for_liwc_manual_input" / "full_dataset_de.csv"
+DEFAULT_OUTPUT_DIR = REPO_ROOT / "results" / "approach2" / "de_text_de_prompt_results"
+MODELS_CONFIG_PATH = REPO_ROOT / "configs" / "api_models.json"
 
-DEFAULT_TEXT_COL = "text_en"
+# Maps a provider name (as used in configs/api_models.json) to its env var names.
+PROVIDER_ENV = {
+    "nhr": {"api_key": "NHR_API_KEY", "base_url": "NHR_BASE_URL"},
+    "gwdg": {"api_key": "GWDG_API_KEY", "base_url": "GWDG_BASE_URL"},
+}
+DEFAULT_PROVIDER = "gwdg"
+
+DEFAULT_TEXT_COL = "text"
 DEFAULT_N_PER_DIMENSION = 20
-DEFAULT_SAMPLE_MODE = "random"  # random | first | all
+DEFAULT_SAMPLE_MODE = "all"  # random | first | all
 DEFAULT_RANDOM_STATE = 42
 
+DEFAULT_VARIANT = "V1_full_manual_baseline"
+
 DEFAULT_MODEL = "qwen3-30b-a3b-instruct-2507"
-DEFAULT_TEMPERATURE = 0.1
+DEFAULT_TEMPERATURE = 0.0
 DEFAULT_MAX_TOKENS = 1024
 
 MAX_RETRIES = 8
@@ -67,11 +81,12 @@ RESULT_COLUMNS = [
     "dimension",
     "variant_id",
     "model",
+    "average_score",
     "llm_score",
-    "raw_response",
+    "brief_rationale",
     "error",
     "attempts",
-    "average_score",
+    "runtime_seconds",
     "timestamp",
 ]
 
@@ -82,10 +97,17 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
     parser.add_argument("--text-col", type=str, default=DEFAULT_TEXT_COL)
     parser.add_argument("--n-per-dimension", type=int, default=DEFAULT_N_PER_DIMENSION,
-                        help="Rows per dimension for dev runs. Use 0 or a negative value for all rows.")
-    parser.add_argument("--sample-mode", choices=["random", "first", "all"], default=DEFAULT_SAMPLE_MODE)
+                        help="Rows per dimension, only used when --sample-mode is random or first. "
+                             "Ignored (all rows are used) when --sample-mode is all, which is the default.")
+    parser.add_argument("--sample-mode", choices=["random", "first", "all"], default=DEFAULT_SAMPLE_MODE,
+                        help="'all' (default) tests every transcript across all 5 dimensions. "
+                             "'random'/'first' take a --n-per-dimension dev subsample instead.")
     parser.add_argument("--random-state", type=int, default=DEFAULT_RANDOM_STATE)
-    parser.add_argument("--model", type=str, default=DEFAULT_MODEL)
+    parser.add_argument("--model", type=str, default=DEFAULT_MODEL,
+                        help="Run only this model.")
+    parser.add_argument("--all-models", action="store_true",
+                        help="Ignore --model and run the full assessment once for every model "
+                             f"listed in {MODELS_CONFIG_PATH.relative_to(REPO_ROOT)}.")
     parser.add_argument("--temperature", type=float, default=DEFAULT_TEMPERATURE)
     parser.add_argument("--max-tokens", type=int, default=DEFAULT_MAX_TOKENS)
     parser.add_argument("--overwrite", action="store_true",
@@ -93,6 +115,30 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--keep-failed", action="store_true",
                         help="Do not retry existing failed/unparseable calls. By default, failed calls are retried.")
     return parser.parse_args()
+
+
+def load_model_provider_map(config_path: Path = MODELS_CONFIG_PATH) -> dict[str, str]:
+    """Return {model_id: provider_name} for every model listed in configs/api_models.json."""
+    with config_path.open("r", encoding="utf-8") as f:
+        config = json.load(f)
+    model_provider: dict[str, str] = {}
+    for provider_name, models in config.items():
+        for model_id in models:
+            if model_id.startswith("_"):
+                continue
+            model_provider[model_id] = provider_name
+    return model_provider
+
+
+def make_client(provider_name: str) -> OpenAI:
+    env = PROVIDER_ENV.get(provider_name, PROVIDER_ENV[DEFAULT_PROVIDER])
+    api_key = os.getenv(env["api_key"])
+    base_url = os.getenv(env["base_url"])
+    if not api_key:
+        raise RuntimeError(f"Missing {env['api_key']} in environment or .env file.")
+    if not base_url:
+        raise RuntimeError(f"Missing {env['base_url']} in environment or .env file.")
+    return OpenAI(api_key=api_key, base_url=base_url, timeout=120.0)
 
 
 def normalize_text_value(value: Any) -> str:
@@ -210,17 +256,27 @@ def backoff_delay(attempt: int, is_rate_limit: bool) -> float:
 
 
 def call_model(client: OpenAI, prompt: str, model: str, temperature: float, max_tokens: int) -> dict[str, Any]:
-    """Send one prompt to the model and return raw response plus parse/validation status."""
+    """Send one prompt to the model and return raw response, parse status, and a per-attempt log."""
     result: dict[str, Any] = {
         "raw_response": None,
         "parsed_json": None,
         "llm_score": None,
         "error": None,
         "attempts": 0,
+        "attempt_log": [],
     }
 
     for attempt in range(1, MAX_RETRIES + 1):
         result["attempts"] = attempt
+        attempt_started_at = dt.datetime.now().isoformat(timespec="seconds")
+        attempt_t0 = time.perf_counter()
+        attempt_record: dict[str, Any] = {
+            "attempt": attempt,
+            "started_at": attempt_started_at,
+            "duration_seconds": None,
+            "error": None,
+            "retry_delay_seconds": None,
+        }
         try:
             response = client.chat.completions.create(
                 model=model,
@@ -228,6 +284,9 @@ def call_model(client: OpenAI, prompt: str, model: str, temperature: float, max_
                 temperature=temperature,
                 max_tokens=max_tokens,
             )
+            attempt_record["duration_seconds"] = round(time.perf_counter() - attempt_t0, 3)
+            result["attempt_log"].append(attempt_record)
+
             content = response.choices[0].message.content or ""
             raw_response = content.strip()
             parsed, score, parse_error = parse_and_validate_response(raw_response)
@@ -241,9 +300,16 @@ def call_model(client: OpenAI, prompt: str, model: str, temperature: float, max_
 
         except Exception as exc:  # provider-specific exceptions vary, so keep broad handling here
             error = str(exc)
+            attempt_record["duration_seconds"] = round(time.perf_counter() - attempt_t0, 3)
+            attempt_record["error"] = error
             result["error"] = error
             if attempt < MAX_RETRIES:
-                time.sleep(backoff_delay(attempt, is_rate_limit_error(error)))
+                delay = backoff_delay(attempt, is_rate_limit_error(error))
+                attempt_record["retry_delay_seconds"] = round(delay, 1)
+                result["attempt_log"].append(attempt_record)
+                time.sleep(delay)
+            else:
+                result["attempt_log"].append(attempt_record)
 
     return result
 
@@ -289,30 +355,21 @@ def should_skip_existing(record: dict[str, Any], keep_failed: bool) -> bool:
     return keep_failed
 
 
-def run_assessment(args: argparse.Namespace) -> tuple[Path, Path, Path]:
-    api_key = os.getenv("GWDG_API_KEY")
-    base_url = os.getenv("GWDG_BASE_URL")
-    if not api_key:
-        raise RuntimeError("Missing GWDG_API_KEY in environment or .env file.")
-    if not base_url:
-        raise RuntimeError("Missing GWDG_BASE_URL in environment or .env file.")
+def run_assessment(args: argparse.Namespace, model: str) -> tuple[Path, Path, Path]:
+    provider_name = load_model_provider_map().get(model, DEFAULT_PROVIDER)
+    client = make_client(provider_name)
 
     if args.text_col not in pd.read_csv(args.input_csv, nrows=1).columns:
         raise ValueError(f"Text column {args.text_col!r} was not found in {args.input_csv}")
 
-    client = OpenAI(api_key=api_key, base_url=base_url, timeout=120.0)
     df = load_subset(args.input_csv, args.n_per_dimension, args.sample_mode, args.random_state)
 
     args.output_dir.mkdir(parents=True, exist_ok=True)
-    csv_path = args.output_dir / f"dev_results_{args.model}.csv"
-    jsonl_path = args.output_dir / f"dev_results_{args.model}.jsonl"
-    log_path = args.output_dir / f"dev_interaction_log_{args.model}.jsonl"
+    csv_path = args.output_dir / f"results_{model}.csv"
+    jsonl_path = args.output_dir / f"results_{model}.jsonl"
+    log_path = args.output_dir / f"interaction_log_{model}.jsonl"
 
-    calls: list[tuple[pd.Series, str]] = [
-        (row, variant_id)
-        for _, row in df.iterrows()
-        for variant_id in VARIANTS
-    ]
+    calls: list[tuple[pd.Series, str]] = [(row, DEFAULT_VARIANT) for _, row in df.iterrows()]
     planned_keys = {
         (str(row["id"]), str(row["dimension"]), str(variant_id))
         for row, variant_id in calls
@@ -350,13 +407,15 @@ def run_assessment(args: argparse.Namespace) -> tuple[Path, Path, Path]:
                 variant_id=variant_id,
             )
 
+            call_t0 = time.perf_counter()
             result = call_model(
                 client=client,
                 prompt=prompt,
-                model=args.model,
+                model=model,
                 temperature=args.temperature,
                 max_tokens=args.max_tokens,
             )
+            runtime_seconds = round(time.perf_counter() - call_t0, 3)
 
             timestamp = dt.datetime.now().isoformat(timespec="seconds")
             error = result.get("error")
@@ -365,16 +424,20 @@ def run_assessment(args: argparse.Namespace) -> tuple[Path, Path, Path]:
             elif error is None:
                 consecutive_rate_limit_failures = 0
 
+            parsed_json = result.get("parsed_json") or {}
+            brief_rationale = parsed_json.get("brief_rationale", "")
+
             record = {
                 "id": str(row["id"]),
                 "dimension": str(row["dimension"]),
                 "variant_id": str(variant_id),
-                "model": args.model,
+                "model": model,
+                "average_score": row.get("average_score", ""),
                 "llm_score": "" if result.get("llm_score") is None else result.get("llm_score"),
-                "raw_response": result.get("raw_response"),
+                "brief_rationale": "" if brief_rationale is None else brief_rationale,
                 "error": "" if error is None else error,
                 "attempts": result.get("attempts"),
-                "average_score": row.get("average_score", ""),
+                "runtime_seconds": runtime_seconds,
                 "timestamp": timestamp,
             }
 
@@ -388,12 +451,16 @@ def run_assessment(args: argparse.Namespace) -> tuple[Path, Path, Path]:
                 "id": record["id"],
                 "dimension": record["dimension"],
                 "variant_id": record["variant_id"],
-                "model": args.model,
+                "model": model,
+                "provider": provider_name,
                 "attempts": record["attempts"],
+                "runtime_seconds": runtime_seconds,
+                "attempt_log": result.get("attempt_log"),
                 "prompt": prompt,
                 "raw_response": result.get("raw_response"),
                 "parsed_json": result.get("parsed_json"),
                 "validated_score": result.get("llm_score"),
+                "average_score": record["average_score"],
                 "error": error,
             }, ensure_ascii=False) + "\n")
             log_f.flush()
@@ -409,8 +476,27 @@ def run_assessment(args: argparse.Namespace) -> tuple[Path, Path, Path]:
     return csv_path, jsonl_path, log_path
 
 
-if __name__ == "__main__":
-    output_csv, output_jsonl, output_log = run_assessment(parse_args())
+def main() -> None:
+    args = parse_args()
+
+    if args.all_models:
+        models = list(load_model_provider_map().keys())
+        print(f"Running assessment for {len(models)} models: {models}\n")
+        for model in tqdm(models, desc="Models", unit="model"):
+            try:
+                output_csv, output_jsonl, output_log = run_assessment(args, model)
+                tqdm.write(f"[{model}] Saved results:         {output_csv}")
+                tqdm.write(f"[{model}] Saved results:         {output_jsonl}")
+                tqdm.write(f"[{model}] Saved interaction log: {output_log}")
+            except Exception as exc:
+                tqdm.write(f"[{model}] failed and was skipped: {exc}")
+        return
+
+    output_csv, output_jsonl, output_log = run_assessment(args, args.model)
     print(f"\nSaved results:         {output_csv}")
     print(f"Saved results:         {output_jsonl}")
     print(f"Saved interaction log: {output_log}")
+
+
+if __name__ == "__main__":
+    main()
