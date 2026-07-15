@@ -3,7 +3,7 @@
 set -euo pipefail
 
 # Usage:
-# ./git_push.sh "model=qwen2.5-14b temperature=0"
+# ./gitpush.sh "commit message"
 
 commit_message="${1:?Usage: $0 \"commit message / hyperparameters\"}"
 env_file="${ENV_FILE:-.env}"
