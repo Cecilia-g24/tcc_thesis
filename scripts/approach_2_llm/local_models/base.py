@@ -21,7 +21,7 @@ from typing import Any
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
-from .common import build_quantization_config, model_input_device, resolve_torch_dtype
+from .common import build_quantization_config, model_input_device, render_chat_prompt, resolve_torch_dtype
 
 
 class BaseLocalModel:
@@ -88,20 +88,7 @@ class BaseLocalModel:
         return {}
 
     def _render_prompt(self, messages: list[dict[str, str]]) -> str:
-        if not getattr(self.tokenizer, "chat_template", None):
-            return messages[-1]["content"]
-
-        kwargs: dict[str, Any] = {
-            "tokenize": False,
-            "add_generation_prompt": True,
-            **self.chat_template_kwargs(),
-        }
-        try:
-            return self.tokenizer.apply_chat_template(messages, **kwargs)
-        except TypeError:
-            # Some template implementations reject unknown kwargs (e.g. enable_thinking on
-            # a non-Qwen3 template); retry with the plain call.
-            return self.tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
+        return render_chat_prompt(self.tokenizer, messages, self.chat_template_kwargs())
 
     def chat(self, messages: list[dict[str, str]]) -> str:
         """Generate one response for one conversation."""
@@ -168,6 +155,18 @@ class BaseVLLMModel:
 
         self.disable_thinking = disable_thinking
 
+        # Render prompts ourselves via the tokenizer (same code path as the transformers
+        # backend) instead of vLLM's own `LLM.chat()`. vLLM's `.chat()` unconditionally
+        # requires a chat template and raises if the checkpoint doesn't define one (e.g. a
+        # base/completion checkpoint with no instruct format); rendering locally lets such
+        # models fall back to the plain prompt, exactly like the transformers backend does.
+        print(f"Loading tokenizer from: {model_path}")
+        self.tokenizer = AutoTokenizer.from_pretrained(
+            model_path,
+            trust_remote_code=trust_remote_code,
+            local_files_only=local_files_only,
+        )
+
         do_sample = temperature > 0
         self.sampling_params = SamplingParams(
             temperature=temperature if do_sample else 0.0,
@@ -207,18 +206,15 @@ class BaseVLLMModel:
             raise
 
     def chat_template_kwargs(self) -> dict[str, Any]:
-        """Family-specific `chat_template_kwargs` passed to `LLM.chat()`. Empty for plain models."""
+        """Family-specific `apply_chat_template()` kwargs. Empty for plain models."""
         return {}
 
     def batch_chat(self, messages_list: list[list[dict[str, str]]]) -> list[str]:
-        chat_kwargs: dict[str, Any] = {}
-        extra = self.chat_template_kwargs()
-        if extra:
-            chat_kwargs["chat_template_kwargs"] = extra
-        try:
-            outputs = self.llm.chat(messages_list, self.sampling_params, **chat_kwargs)
-        except TypeError:
-            outputs = self.llm.chat(messages_list, self.sampling_params)
+        prompts = [
+            render_chat_prompt(self.tokenizer, messages, self.chat_template_kwargs())
+            for messages in messages_list
+        ]
+        outputs = self.llm.generate(prompts, self.sampling_params)
         return [output.outputs[0].text.strip() for output in outputs]
 
     def chat(self, messages: list[dict[str, str]]) -> str:

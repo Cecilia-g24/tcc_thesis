@@ -211,17 +211,19 @@ def extract_json_object(text: str) -> dict[str, Any] | None:
     except json.JSONDecodeError:
         pass
 
-    # Last-resort extraction if the provider wraps the JSON in extra text.
+    # Last-resort extraction if the provider wraps the JSON in extra text, or -- as small
+    # local models sometimes do -- keeps decoding past the first object and repeats the
+    # template several times (e.g. "{...}\n{...}\n{...}"). Parse only the first complete
+    # JSON object starting at the first "{" and ignore anything that follows it, rather
+    # than joining first-"{"..last-"}" into one (invalid) blob.
     start = cleaned.find("{")
-    end = cleaned.rfind("}")
-    if start != -1 and end != -1 and end > start:
-        try:
-            parsed = json.loads(cleaned[start:end + 1])
-            return parsed if isinstance(parsed, dict) else None
-        except json.JSONDecodeError:
-            return None
-
-    return None
+    if start == -1:
+        return None
+    try:
+        parsed, _ = json.JSONDecoder().raw_decode(cleaned, start)
+        return parsed if isinstance(parsed, dict) else None
+    except json.JSONDecodeError:
+        return None
 
 
 def parse_and_validate_response(raw_response: str | None) -> tuple[dict[str, Any] | None, int | None, str | None]:

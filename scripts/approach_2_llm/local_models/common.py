@@ -10,6 +10,35 @@ from typing import Any
 import torch
 
 
+def render_chat_prompt(
+    tokenizer: Any,
+    messages: list[dict[str, str]],
+    chat_template_kwargs: dict[str, Any] | None = None,
+) -> str:
+    """Render a chat messages list to a prompt string via the tokenizer's chat template,
+    falling back to the raw user content when no chat template is defined (e.g. base/
+    completion checkpoints that were never fine-tuned into an instruct chat format).
+
+    Shared by both the transformers and vLLM backends so a model without a chat template
+    behaves the same way (plain prompt, no template) regardless of backend, instead of
+    vLLM's own `.chat()` raising because it always requires one.
+    """
+    if not getattr(tokenizer, "chat_template", None):
+        return messages[-1]["content"]
+
+    kwargs: dict[str, Any] = {
+        "tokenize": False,
+        "add_generation_prompt": True,
+        **(chat_template_kwargs or {}),
+    }
+    try:
+        return tokenizer.apply_chat_template(messages, **kwargs)
+    except TypeError:
+        # Some template implementations reject unknown kwargs (e.g. enable_thinking on
+        # a non-Qwen3 template); retry with the plain call.
+        return tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
+
+
 def resolve_torch_dtype(dtype_name: str) -> Any:
     if dtype_name == "auto":
         return "auto"
