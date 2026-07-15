@@ -1,4 +1,4 @@
-# tcc_thesis (https)
+# tcc_thesis (https-new)
 
 Master's thesis project: automated assessment of **Transcultural Competence (TCC)** in clinical interview transcripts using psycholinguistic features (LIWC) and large language models.
 
