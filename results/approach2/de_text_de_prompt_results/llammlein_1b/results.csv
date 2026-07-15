@@ -1,0 +1,692 @@
+id,dimension,variant_id,model,model_path,llm_score,raw_response,error,attempts,average_score,timestamp
+AU01.000846,d1_illness_beliefs,V1_full_manual_baseline,llammlein_1b,/home/woody/iwso/iwso237h/models/llammlein_1b,,"{
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ {
+{ { {
+{ {
+{ { {
+{ { {
+{ { {
+{ { { { { { {
+{ { { {
+{ { { { { { { { {",JSON parse error: response did not contain a valid JSON object,1,2.333,2026-07-15T16:26:35
+AU01.000846,d1_illness_beliefs,V2_no_anchors,llammlein_1b,/home/woody/iwso/iwso237h/models/llammlein_1b,,"{
+{ ""score"": 0,
+{ ""brief_rationale"": ""...""
+} {
+{ ""score"": 0,
+{ ""brief_rationale"": ""...""
+{ ""score"": 0,
+{ ""brief_rationale"": ""...""
+{ ""score"": 0,
+{ ""brief_rationale"": ""...""
+{ ""score"": 0,
+{ ""brief_rationale"": ""...""
+{ ""score"": 0,
+{ ""brief_rationale"": ""...""
+{ ""score"": 0,
+{ ""brief_rationale"": ""...""
+{ ""score"": 0,
+{ ""brief_rationale"": ""...""
+{ ""score"": 0,
+{ ""brief_rationale"": ""...""
+{ ""score"": 0,
+{ ""brief_rationale"": ""...""
+{ ""score"": 0,
+{ ""brief_rationale"": ""...""
+{ ""score"": 0,
+{ ""brief_rationale"": ""...""
+{ ""score"": 0,
+{ ""brief_rationale"": ""...""
+{ ""score"": 0,
+{ ""brief_rationale"": ""...""
+{ ""score"": 0,
+{ ""brief_rationale"": ""...""
+{ ""score"": 0,
+{ ""brief_rationale"": ""...""
+{ ""score"": 0,
+{ ""brief_rationale"": ""...""
+{ ""score"": 0,
+{ ""brief_rationale"": ""...""
+{ ""score"": 0,
+{ ""brief_rationale"": ""...""
+{ ""score"": 0,
+{ ""brief_rationale"": ""...""
+{ ""score"": 0,
+{ ""brief_rationale"": ""...""
+{ ""score"": 0,
+{ ""brief_rationale"": ""...""
+{ ""score"": 0,
+{ ""brief_rationale"": ""...""
+{ ""score"": 0,
+{ ""brief_rationale"": ""...""
+{ ""score"": 0,
+{ ""brief_rationale"": ""...""
+{ ""score"": 0,
+{ ""brief_rationale"": ""...""
+{ ""score"": 0,
+{ ""brief_rationale"": ""...""
+{ ""score"": 0,
+{ ""brief_rationale"": ""...""
+{ ""score"": 0,
+{ ""brief_rationale"": ""...""
+{ ""score"": 0,
+{ ""brief_rationale"": ""...""
+{ ""score"": 0,
+{ ""brief_rationale"": ""...""
+{ ""score"": 0,
+{ ""brief_rationale"": ""...""
+{ ""score"": 0,
+{ ""brief_rationale"": ""...""
+{ ""score"": 0,
+{ ""brief_rationale"": ""...""
+{ ""score"": 0,
+{ ""brief_rationale"": ""...""
+{ ""score"": 0,
+{ ""brief_rationale"": ""...""
+{ ""score"": 0,
+{ ""brief_rationale"": ""...""
+{ ""score"": 0,
+{ ""brief_rationale"": ""...""
+{ ""score"": 0,
+{ ""brief_rationale"": ""...""
+{ ""score"": 0,
+{ ""brief_rationale"": ""...""
+{ ""score"": 0,
+{ ""brief_rationale"": ""...""
+{ ""score"": 0,
+{ ""brief_rationale"": ""...""
+{ ""score"": 0,
+{ ""brief_rationale"": ""...""
+{ ""score"": 0,
+{ ""brief_rationale"": ""...""
+{ ""score"": 0,
+{ ""brief_rationale"": ""...""
+{ ""score"": 0,
+{ ""brief_rationale"": ""...""
+{ ""score"": 0,
+{ ""brief_rationale"": ""...""
+{ ""score"": 0,
+{ ""brief_rationale"": ""...""
+{ ""score"": 0,
+{ ""brief_rationale"": ""...""
+{ ""score"": 0,
+{ ""brief_rationale"": ""...""
+{ ""score"": 0,
+{ ""brief_rationale"": ""...""
+{ ""score"": 0,
+{ ""brief_rationale"": ""...""
+{ ""score"": 0,
+{ ""brief_rationale"": ""...""
+{ ""score"": 0,
+{ ""brief_rationale"": ""...""
+{ ""score"": 0,
+{ ""brief_rationale"": ""...""
+{ ""score"": 0,
+{ ""brief_rationale"": ""...""
+{ ""score"": 0,
+{ """,JSON parse error: response did not contain a valid JSON object,1,2.333,2026-07-15T16:32:04
+AU01.000846,d1_illness_beliefs,V3_no_rationale,llammlein_1b,/home/woody/iwso/iwso237h/models/llammlein_1b,,"{
+{ ""score"": 0
+} { ""score"": 2
+} { ""score"": 4
+} { ""score"": 10
+} { ""score"": 100
+} { ""score"": 0
+} { ""score"": 10
+} { ""score"": 100
+} { ""score"": 0
+} { ""score"": 10
+} { ""score"": 100
+} { ""score"": 0
+} { ""score"": 10
+} { ""score"": 100
+} { ""score"": 0
+} { ""score"": 10
+} { ""score"": 100
+} { ""score"": 0
+} { ""score"": 10
+} { ""score"": 0
+} { ""score"": 10
+} { ""score"": 0
+} { ""score"": 10
+} { ""score"": 0
+} { ""score"": 10
+} { ""score"": 0
+} { ""score"": 10
+} { ""score"": 0
+} { ""score"": 10
+} { ""score"": 0
+} { ""score"": 10
+} { ""score"": 0
+} { ""score"": 10
+} { ""score"": 0
+} { ""score"": 10
+} { ""score"": 10
+} { ""score"": 0
+} { ""score"": 10
+} { ""score"": 10
+} { ""score"": 0
+} { ""score"": 10
+} { ""score"": 10
+} { ""score"": 10
+} { ""score"": 10
+} { ""score"": 10
+} { ""score"": 10
+} { ""score"": 10
+} { ""score"": 10
+} { ""score"": 10
+} { ""score"": 10
+} { ""score"": 10
+} { ""score"": 10
+} { ""score"": 10
+} { ""score"": 10
+} { ""score"": 10
+} { ""score"": 10
+} { ""score"": 10
+} { ""score"": 10
+} { ""score"": 10
+} { ""score"": 10
+} { ""score"": 10
+} { ""score"": 10
+} { ""score"": 10
+} { ""score"": 10
+} { ""score"": 10
+} { ""score"": 10
+} { ""score"": 10
+} { ""score"": 10
+} { ""score"": 10
+} { ""score"": 10
+} { ""score"": 10
+} { ""score"": 10
+} { ""score"": 10
+} { ""score"": 10
+} { ""score"": 10
+} { ""score"": 10
+} { ""score"": 10
+} { ""score"": 10
+} { ""score"": 10
+} { ""score"": 10
+} { ""score"": 10
+} { ""score"": 10
+} { ""score"": 10
+} { ""score"": 10
+} { ""score"": 10
+} { ""score"": 10
+} { ""score"": 10
+} { ""score"": 10
+} { ""score"": 10
+} { ""score"": 10
+} { ""score"": 10
+} { ""score"": 10
+} { ""score"": 10
+} { ""score"": 10
+} { ""score"": 10
+} { ""score"": 10
+} { ""score"": 10
+} { ""score"": 10
+} { ""score"": 10
+} { ""score"": 10
+} { ""score"": 10
+} { ""score"": 10
+} { ""score"": 10
+} { ""score"": 10
+} { ""score"": 10
+} { ""score"": 10
+} { ""score"": 10
+} {""score"": 10
+} {""score"": 10
+} {""score"": 10
+} {""score"": 10
+} {""score"": 10
+->""score"": 10
+} {""score"":",JSON parse error: response did not contain a valid JSON object,1,2.333,2026-07-15T16:37:38
+AU01.000846,d1_illness_beliefs,V4_evidence_before_score,llammlein_1b,/home/woody/iwso/iwso237h/models/llammlein_1b,,"{
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ } {
+{ {
+{ { {
+{ {
+{ { {
+{ { {
+{ { { { { { { { { { { { { {
+{ { { { { { { { { { { { { { { {
+
+{ {
+{
+{ {
+{
+{
+{
+{
+{
+{
+{
+{
+{
+{
+{
+{
+{
+{
+{
+{
+{
+{
+{
+{
+{
+{
+{
+{
+{
+und
+und",JSON parse error: response did not contain a valid JSON object,1,2.333,2026-07-15T16:43:09
+AU01.000846,d1_illness_beliefs,V5_structured_checklist,llammlein_1b,/home/woody/iwso/iwso237h/models/llammlein_1b,,"{
+{ ""score"": 0,
+{ ""brief_rationale"": ""...""
+} {
+{ ""score"": 0,
+{ ""brief_rationale"": ""...""
+{ ""score"": 0,
+{ ""brief_rationale"": ""...""
+{ ""score"": 0,
+{ ""brief_rationale"": ""...""
+{ ""score"": 0,
+{ ""brief_rationale"": ""...""
+{ ""score"": 0,
+{ ""brief_rationale"": ""...""
+{ ""score"": 0,
+{ ""brief_rationale"": ""...""
+{ ""score"": 0,
+{ ""brief_rationale"": ""...""
+{ ""score"": 0,
+{ ""brief_rationale"": ""...""
+{ ""score"": 0,
+{ ""brief_rationale"": ""...""
+{ ""score"": 0,
+{ ""brief_rationale"": ""...""
+{ ""score"": 0,
+{ ""brief_rationale"": ""...""
+{ ""score"": 0,
+{ ""brief_rationale"": ""...""
+{ ""score"": 0,
+{ ""brief_rationale"": ""...""
+{ ""score"": 0,
+{ ""brief_rationale"": ""...""
+{ ""score"": 0,
+{ ""brief_rationale"": ""...""
+{ ""score"": 0,
+{ ""brief_rationale"": ""...""
+{ ""score"": 0,
+{ ""brief_rationale"": ""...""
+{ ""score"": 0,
+{ ""brief_rationale"": ""...""
+{ ""score"": 0,
+{ ""brief_rationale"": ""...""
+{ ""score"": 0,
+{ ""brief_rationale"": ""...""
+{ ""score"": 0,
+{ ""brief_rationale"": ""...""
+{ ""score"": 0,
+{ ""brief_rationale"": ""...""
+{ ""score"": 0,
+{ ""brief_rationale"": ""...""
+{ ""score"": 0,
+{ ""brief_rationale"": ""...""
+{ ""score"": 0,
+{ ""brief_rationale"": ""...""
+{ ""score"": 0,
+{ ""brief_rationale"": ""...""
+{ ""score"": 0,
+{ ""brief_rationale"": ""...""
+{ ""score"": 0,
+{ ""brief_rationale"": ""...""
+{ ""score"": 0,
+{ ""brief_rationale"": ""...""
+{ ""score"": 0,
+{ ""brief_rationale"": ""...""
+{ ""score"": 0,
+{ ""brief_rationale"": ""...""
+{ ""score"": 0,
+{ ""brief_rationale"": ""...""
+{ ""score"": 0,
+{ ""brief_rationale"": ""...""
+{ ""score"": 0,
+{ ""brief_rationale"": ""...""
+{ ""score"": 0,
+{ ""brief_rationale"": ""...""
+{ ""score"": 0,
+{ ""brief_rationale"": ""...""
+{ ""score"": 0,
+{ ""brief_rationale"": ""...""
+{ ""score"": 0,
+{ ""brief_rationale"": ""...""
+{ ""score"": 0,
+{ ""brief_rationale"": ""...""
+{ ""score"": 0,
+{ ""brief_rationale"": ""...""
+{ ""score"": 0,
+{ ""brief_rationale"": ""...""
+{ ""score"": 0,
+{ ""brief_rationale"": ""...""
+{ ""score"": 0,
+{ ""brief_rationale"": ""...""
+{ ""score"": 0,
+{ ""brief_rationale"": ""...""
+{ ""score"": 0,
+{ ""brief_rationale"": ""...""
+{ ""score"": 0,
+{ ""brief_rationale"": ""...""
+{ ""brief_rationale"": ""...""
+{ ""brief_rationale"": ""brief_rationale"":
+-
+{ ""brief_rationale"":
+-rationale-
+{""brief_rationale-
+-
+-rationale-rationale-rationale-rationale-rationale-rationale-rationale-rationale-rationale-rationale-rationale-rationale-rationale-rationale-rationale-rationale-rationale-rationale-
+-rationale-rationale-ration-rationale-rationale-
+alselbstationale-rationale-rationale-ration-
+:
+ation-rationale-ration-
+ationenachtenachten-
+- und- und-
+-
+-patienten-patienten-patienten- und-
+-
+-",JSON parse error: response did not contain a valid JSON object,1,2.333,2026-07-15T16:48:44
