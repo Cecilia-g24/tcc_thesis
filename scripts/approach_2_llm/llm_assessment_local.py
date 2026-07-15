@@ -2,20 +2,26 @@
 Run LLM-as-judge assessment on transcripts using a locally downloaded Hugging Face model.
 
 This script mirrors llm_assessment_api.py, but replaces the OpenAI/GWDG API call with
-local generation. Two backends are supported:
+local generation via the local_models/ package. Two backends are supported:
 
     --backend vllm          (default) Batched generation via vLLM, with automatic
-                             multi-GPU tensor-parallel sharding for large models
-                             (see tmp/Qwen_llm.py's vllm_LLM for the pattern this
-                             borrows from). Requires `pip install vllm`. Best for
-                             well-supported architectures (Qwen, Gemma, Mistral, ...)
-                             and for anything too large to run one call at a time.
+                             multi-GPU tensor-parallel sharding for large models.
+                             Requires `pip install vllm`. Best for well-supported
+                             architectures (Qwen, Gemma, Mistral, ...) and for anything
+                             too large to run one call at a time.
     --backend transformers  Plain AutoModelForCausalLM.generate(), one call at a
                              time. Slower and not batched, but works with any
                              HF-compatible checkpoint, including small/custom
                              research models that vLLM may not support, and it is
                              the only backend that supports bitsandbytes 4/8-bit
                              quantization (--load-in-4bit / --load-in-8bit).
+
+Model loading and generation live in local_models/ (one file per model family, e.g.
+qwen.py, llama.py), each exposing a `.chat(messages)` / `.batch_chat(messages_list)`
+class per backend -- see local_models/base.py. This file only does the assessment task:
+data loading/sampling, prompt building, resumable result bookkeeping, and retries.
+--model-path/--model-alias are matched against local_models/registry.py to pick the
+right family automatically.
 
 Designed for resumable, auditable development runs:
 - fixed-seed dev sampling or full-run mode
@@ -65,7 +71,6 @@ from typing import Any
 import pandas as pd
 import torch
 from tqdm import tqdm
-from transformers import AutoModelForCausalLM, AutoTokenizer
 
 try:
     # Works when this file is placed next to de_prompt_construction.py.
@@ -78,6 +83,30 @@ except ModuleNotFoundError:
     if str(THIS_DIR) not in sys.path:
         sys.path.insert(0, str(THIS_DIR))
     from de_prompt_construction import VARIANTS, build_prompt
+
+try:
+    from local_models import (
+        BaseLocalModel,
+        BaseVLLMModel,
+        check_cuda_compatibility,
+        get_transformers_class,
+        get_vllm_class,
+        resolve_family,
+    )
+except ModuleNotFoundError:
+    import sys
+
+    THIS_DIR = Path(__file__).resolve().parent
+    if str(THIS_DIR) not in sys.path:
+        sys.path.insert(0, str(THIS_DIR))
+    from local_models import (
+        BaseLocalModel,
+        BaseVLLMModel,
+        check_cuda_compatibility,
+        get_transformers_class,
+        get_vllm_class,
+        resolve_family,
+    )
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -163,8 +192,9 @@ def parse_args() -> argparse.Namespace:
         "-a", "--model-alias",
         type=str,
         default=os.getenv("LOCAL_MODEL_ALIAS"),
-        help="Short name used for the output subfolder and result rows. Defaults to the "
-             "--model-path folder name.",
+        help="Short name used for the output subfolder and result rows, and (together "
+             "with --model-path) to auto-detect the model family in local_models/. "
+             "Defaults to the --model-path folder name.",
     )
     parser.add_argument("--temperature", type=float, default=DEFAULT_TEMPERATURE)
     parser.add_argument("--top-p", type=float, default=DEFAULT_TOP_P)
@@ -183,7 +213,8 @@ def parse_args() -> argparse.Namespace:
         "--disable-thinking",
         action="store_true",
         default=True,
-        help="For Qwen3-style chat templates, request non-thinking mode where supported.",
+        help="For chat templates that support a thinking-mode toggle (e.g. Qwen3), request "
+             "non-thinking mode. Families without such a toggle ignore this.",
     )
     parser.add_argument("--allow-thinking", dest="disable_thinking", action="store_false")
     parser.add_argument("--overwrite", action="store_true", help="Ignore existing result files and start a fresh run.")
@@ -407,16 +438,6 @@ def sanitize_filename(value: str) -> str:
     return re.sub(r"[^A-Za-z0-9_.-]+", "_", value).strip("_") or "local_model"
 
 
-def resolve_torch_dtype(dtype_name: str) -> Any:
-    if dtype_name == "auto":
-        return "auto"
-    return {
-        "float16": torch.float16,
-        "bfloat16": torch.bfloat16,
-        "float32": torch.float32,
-    }[dtype_name]
-
-
 def load_existing_results(csv_path: Path, overwrite: bool) -> list[dict[str, Any]]:
     if overwrite or not csv_path.exists():
         return []
@@ -502,155 +523,58 @@ def prepare_pending_calls(
     return records_by_key, pending_calls
 
 
+def build_transformers_model(args: argparse.Namespace) -> BaseLocalModel:
+    """Resolve this model's family from --model-path/--model-alias (local_models/registry.py)
+    and instantiate the matching transformers-backend class."""
+    family = resolve_family(args.model_path, args.model_alias)
+    print(f"Resolved model family: {family} (backend=transformers)")
+
+    model_cls = get_transformers_class(family)
+    return model_cls(
+        model_path=args.model_path,
+        max_new_tokens=args.max_new_tokens,
+        temperature=args.temperature,
+        top_p=args.top_p,
+        dtype=args.dtype,
+        device_map=args.device_map,
+        trust_remote_code=args.trust_remote_code,
+        local_files_only=args.local_files_only,
+        attn_implementation=args.attn_implementation,
+        load_in_4bit=args.load_in_4bit,
+        load_in_8bit=args.load_in_8bit,
+        disable_thinking=args.disable_thinking,
+    )
+
+
+def build_vllm_model(args: argparse.Namespace) -> BaseVLLMModel:
+    """Resolve this model's family from --model-path/--model-alias (local_models/registry.py)
+    and instantiate the matching vLLM-backend class."""
+    family = resolve_family(args.model_path, args.model_alias)
+    print(f"Resolved model family: {family} (backend=vllm)")
+
+    model_cls = get_vllm_class(family)
+    return model_cls(
+        model_path=args.model_path,
+        max_new_tokens=args.max_new_tokens,
+        temperature=args.temperature,
+        top_p=args.top_p,
+        dtype=args.dtype,
+        trust_remote_code=args.trust_remote_code,
+        local_files_only=args.local_files_only,
+        tensor_parallel_size=args.tensor_parallel_size,
+        gpu_memory_utilization=args.gpu_memory_utilization,
+        max_model_len=args.vllm_max_model_len,
+        quantization=args.quantization,
+        disable_thinking=args.disable_thinking,
+    )
+
+
 # --------------------------------------------------------------------------- #
 # transformers backend
 # --------------------------------------------------------------------------- #
 
 
-def build_quantization_config(args: argparse.Namespace) -> Any | None:
-    if args.load_in_4bit and args.load_in_8bit:
-        raise ValueError("Choose only one of --load-in-4bit or --load-in-8bit.")
-
-    if not args.load_in_4bit and not args.load_in_8bit:
-        return None
-
-    try:
-        from transformers import BitsAndBytesConfig
-    except ImportError as exc:
-        raise RuntimeError(
-            "bitsandbytes quantization was requested, but BitsAndBytesConfig could not be imported. "
-            "Install a compatible transformers/bitsandbytes setup, or run without quantization."
-        ) from exc
-
-    if args.load_in_4bit:
-        return BitsAndBytesConfig(
-            load_in_4bit=True,
-            bnb_4bit_quant_type="nf4",
-            bnb_4bit_compute_dtype=torch.float16,
-            bnb_4bit_use_double_quant=True,
-        )
-
-    return BitsAndBytesConfig(load_in_8bit=True)
-
-
-def load_local_model(args: argparse.Namespace) -> tuple[Any, Any]:
-    """Load tokenizer and local causal language model."""
-    model_path = args.model_path.expanduser().resolve()
-    if not model_path.exists():
-        raise FileNotFoundError(
-            f"Local model path does not exist: {model_path}\n"
-            "Pass the correct directory with --model-path, for example: --model-path ../models/qwen3_30b_instruct"
-        )
-
-    print(f"Loading tokenizer from: {model_path}")
-    tokenizer = AutoTokenizer.from_pretrained(
-        model_path,
-        trust_remote_code=args.trust_remote_code,
-        local_files_only=args.local_files_only,
-    )
-
-    quantization_config = build_quantization_config(args)
-    model_kwargs: dict[str, Any] = {
-        "trust_remote_code": args.trust_remote_code,
-        "local_files_only": args.local_files_only,
-        "low_cpu_mem_usage": True,
-    }
-
-    if quantization_config is not None:
-        model_kwargs["quantization_config"] = quantization_config
-    else:
-        model_kwargs["torch_dtype"] = resolve_torch_dtype(args.dtype)
-
-    if args.device_map and args.device_map.lower() != "none":
-        model_kwargs["device_map"] = args.device_map
-
-    if args.attn_implementation:
-        model_kwargs["attn_implementation"] = args.attn_implementation
-
-    print(f"Loading model from: {model_path}")
-    model = AutoModelForCausalLM.from_pretrained(model_path, **model_kwargs)
-    model.eval()
-
-    if tokenizer.pad_token_id is None and tokenizer.eos_token_id is not None:
-        tokenizer.pad_token = tokenizer.eos_token
-
-    return tokenizer, model
-
-
-def render_chat_prompt(tokenizer: Any, prompt: str, disable_thinking: bool) -> str:
-    """Apply chat template where available; otherwise fall back to the raw prompt."""
-    messages = [{"role": "user", "content": prompt}]
-
-    if getattr(tokenizer, "chat_template", None):
-        kwargs: dict[str, Any] = {
-            "tokenize": False,
-            "add_generation_prompt": True,
-        }
-        if disable_thinking:
-            # Qwen3 chat templates support this; non-Qwen templates usually ignore/accept kwargs,
-            # but some template implementations may reject it, so we retry below without it.
-            kwargs["enable_thinking"] = False
-        try:
-            return tokenizer.apply_chat_template(messages, **kwargs)
-        except TypeError:
-            kwargs.pop("enable_thinking", None)
-            return tokenizer.apply_chat_template(messages, **kwargs)
-
-    return prompt
-
-
-def model_input_device(model: Any) -> torch.device:
-    """Choose a safe input device for normal and accelerate-dispatched models."""
-    try:
-        return next(model.parameters()).device
-    except StopIteration:
-        return torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
-
-def generate_local_response(
-    tokenizer: Any,
-    model: Any,
-    prompt: str,
-    temperature: float,
-    top_p: float,
-    max_new_tokens: int,
-    disable_thinking: bool,
-) -> str:
-    """Generate one local model response."""
-    rendered_prompt = render_chat_prompt(tokenizer, prompt, disable_thinking=disable_thinking)
-    inputs = tokenizer(rendered_prompt, return_tensors="pt")
-
-    target_device = model_input_device(model)
-    inputs = {key: value.to(target_device) for key, value in inputs.items()}
-
-    do_sample = temperature > 0
-    generation_kwargs: dict[str, Any] = {
-        "max_new_tokens": max_new_tokens,
-        "do_sample": do_sample,
-        "pad_token_id": tokenizer.pad_token_id if tokenizer.pad_token_id is not None else tokenizer.eos_token_id,
-        "eos_token_id": tokenizer.eos_token_id,
-    }
-    if do_sample:
-        generation_kwargs["temperature"] = temperature
-        generation_kwargs["top_p"] = top_p
-
-    with torch.inference_mode():
-        output_ids = model.generate(**inputs, **generation_kwargs)
-
-    generated_ids = output_ids[0, inputs["input_ids"].shape[-1] :]
-    return tokenizer.decode(generated_ids, skip_special_tokens=True).strip()
-
-
-def call_model(
-    tokenizer: Any,
-    model: Any,
-    prompt: str,
-    temperature: float,
-    top_p: float,
-    max_new_tokens: int,
-    disable_thinking: bool,
-    empty_cache_every_call: bool,
-) -> dict[str, Any]:
+def call_model(model: BaseLocalModel, prompt: str) -> dict[str, Any]:
     """Send one prompt to the local model and return raw response plus parse/validation status."""
     result: dict[str, Any] = {
         "raw_response": None,
@@ -659,19 +583,12 @@ def call_model(
         "error": None,
         "attempts": 0,
     }
+    messages = [{"role": "user", "content": prompt}]
 
     for attempt in range(1, MAX_RETRIES + 1):
         result["attempts"] = attempt
         try:
-            raw_response = generate_local_response(
-                tokenizer=tokenizer,
-                model=model,
-                prompt=prompt,
-                temperature=temperature,
-                top_p=top_p,
-                max_new_tokens=max_new_tokens,
-                disable_thinking=disable_thinking,
-            )
+            raw_response = model.chat(messages)
             parsed, score, parse_error = parse_and_validate_response(raw_response)
             result.update(
                 {
@@ -694,9 +611,6 @@ def call_model(
             if attempt < MAX_RETRIES:
                 time.sleep(backoff_delay(attempt))
 
-    if empty_cache_every_call and torch.cuda.is_available():
-        torch.cuda.empty_cache()
-    gc.collect()
     return result
 
 
@@ -709,7 +623,7 @@ def run_transformers(
     records_by_key: dict[tuple[str, str, str], dict[str, Any]],
     pending_calls: list[tuple[pd.Series, str]],
 ) -> None:
-    tokenizer, model = load_local_model(args)
+    model = build_transformers_model(args)
     consecutive_runtime_failures = 0
 
     with log_path.open("a", encoding="utf-8") as log_f:
@@ -721,16 +635,7 @@ def run_transformers(
                 variant_id=variant_id,
             )
 
-            result = call_model(
-                tokenizer=tokenizer,
-                model=model,
-                prompt=prompt,
-                temperature=args.temperature,
-                top_p=args.top_p,
-                max_new_tokens=args.max_new_tokens,
-                disable_thinking=args.disable_thinking,
-                empty_cache_every_call=args.empty_cache_every_call,
-            )
+            result = call_model(model, prompt)
 
             timestamp = dt.datetime.now().isoformat(timespec="seconds")
             error = result.get("error")
@@ -795,89 +700,7 @@ def run_transformers(
 # --------------------------------------------------------------------------- #
 
 
-class VLLMBackend:
-    """Batched local chat generation via vLLM.
-
-    Borrows the shape of tmp/Qwen_llm.py's vllm_LLM: one engine, one SamplingParams,
-    and a batch_generate() that hands a list of prompts to LLM.chat() in one call so
-    vLLM's continuous batching and (for multi-GPU) tensor-parallel sharding apply.
-    """
-
-    def __init__(self, args: argparse.Namespace) -> None:
-        try:
-            from vllm import LLM, SamplingParams
-        except ImportError as exc:
-            raise RuntimeError(
-                "The vllm backend was requested, but the `vllm` package is not installed. "
-                "Run `pip install vllm`, or use --backend transformers instead."
-            ) from exc
-
-        model_path = args.model_path.expanduser().resolve()
-        if not model_path.exists():
-            raise FileNotFoundError(
-                f"Local model path does not exist: {model_path}\n"
-                "Pass the correct directory with --model-path, for example: --model-path ../models/qwen3_30b_instruct"
-            )
-
-        if args.local_files_only:
-            os.environ.setdefault("HF_HUB_OFFLINE", "1")
-
-        self.disable_thinking = args.disable_thinking
-
-        do_sample = args.temperature > 0
-        self.sampling_params = SamplingParams(
-            temperature=args.temperature if do_sample else 0.0,
-            top_p=args.top_p if do_sample else 1.0,
-            max_tokens=args.max_new_tokens,
-        )
-
-        tensor_parallel_size = args.tensor_parallel_size
-        if tensor_parallel_size is None:
-            n_gpus = torch.cuda.device_count()
-            tensor_parallel_size = n_gpus if n_gpus > 1 else 1
-
-        engine_kwargs: dict[str, Any] = {
-            "model": str(model_path),
-            "trust_remote_code": args.trust_remote_code,
-            "tensor_parallel_size": tensor_parallel_size,
-            "gpu_memory_utilization": args.gpu_memory_utilization,
-            "dtype": args.dtype,
-        }
-        if args.vllm_max_model_len is not None:
-            engine_kwargs["max_model_len"] = args.vllm_max_model_len
-        if args.quantization:
-            engine_kwargs["quantization"] = args.quantization
-
-        print(f"Loading vLLM engine from: {model_path} (tensor_parallel_size={tensor_parallel_size})")
-        try:
-            self.llm = LLM(**engine_kwargs)
-        except Exception as exc:
-            if "no kernel image is available" in str(exc).lower():
-                raise RuntimeError(
-                    "vLLM engine startup failed with a CUDA 'no kernel image' error. This means the "
-                    "installed PyTorch build has no kernels for this GPU's compute capability (e.g. "
-                    "PyTorch dropped Volta/V100 sm_70 support in recent releases). This also affects "
-                    "--backend transformers on the same GPU, since it's the same torch install. Fix by "
-                    "requesting a node with a newer GPU (compute capability >= 7.5), or by reinstalling "
-                    "a PyTorch build that supports this GPU's compute capability."
-                ) from exc
-            raise
-
-    def batch_generate(self, prompts: list[str]) -> list[str]:
-        messages_list = [[{"role": "user", "content": prompt}] for prompt in prompts]
-        chat_kwargs: dict[str, Any] = {}
-        if self.disable_thinking:
-            # Qwen3-style templates support this; older vLLM versions may not accept the
-            # kwarg at all, so fall back to the plain call below if it's rejected.
-            chat_kwargs["chat_template_kwargs"] = {"enable_thinking": False}
-        try:
-            outputs = self.llm.chat(messages_list, self.sampling_params, **chat_kwargs)
-        except TypeError:
-            outputs = self.llm.chat(messages_list, self.sampling_params)
-        return [output.outputs[0].text.strip() for output in outputs]
-
-
-def call_vllm_chunk(backend: VLLMBackend, prompts: list[str]) -> list[dict[str, Any]]:
+def call_vllm_chunk(model: BaseVLLMModel, prompts: list[str]) -> list[dict[str, Any]]:
     """Generate a chunk of prompts with vLLM.
 
     Batch-generates the whole chunk first. Items that fail to parse/validate are retried
@@ -886,6 +709,7 @@ def call_vllm_chunk(backend: VLLMBackend, prompts: list[str]) -> list[dict[str, 
     chunk is retried together with backoff before being marked failed.
     """
     n = len(prompts)
+    messages_list = [[{"role": "user", "content": prompt}] for prompt in prompts]
     results: list[dict[str, Any]] = [
         {"raw_response": None, "parsed_json": None, "llm_score": None, "error": None, "attempts": 0}
         for _ in range(n)
@@ -895,9 +719,9 @@ def call_vllm_chunk(backend: VLLMBackend, prompts: list[str]) -> list[dict[str, 
     for attempt in range(1, MAX_RETRIES + 1):
         if not pending_idx:
             break
-        batch_prompts = [prompts[i] for i in pending_idx]
+        batch_messages = [messages_list[i] for i in pending_idx]
         try:
-            raw_responses = backend.batch_generate(batch_prompts)
+            raw_responses = model.batch_chat(batch_messages)
         except Exception as exc:  # vLLM/CUDA errors vary by setup
             error = str(exc)
             if torch.cuda.is_available():
@@ -938,7 +762,7 @@ def run_vllm(
     records_by_key: dict[tuple[str, str, str], dict[str, Any]],
     pending_calls: list[tuple[pd.Series, str]],
 ) -> None:
-    backend = VLLMBackend(args)
+    model = build_vllm_model(args)
     consecutive_runtime_failures = 0
     batch_size = max(1, args.vllm_batch_size)
 
@@ -954,7 +778,7 @@ def run_vllm(
                 )
                 for row, variant_id in chunk
             ]
-            chunk_results = call_vllm_chunk(backend, prompts)
+            chunk_results = call_vllm_chunk(model, prompts)
 
             for (row, variant_id), prompt, result in zip(chunk, prompts, chunk_results):
                 timestamp = dt.datetime.now().isoformat(timespec="seconds")
@@ -1009,37 +833,6 @@ def run_vllm(
                     "Check GPU memory/model loading, then rerun; successful calls will be skipped automatically."
                 )
                 break
-
-
-def check_cuda_compatibility() -> None:
-    """Fail fast if this PyTorch build has no CUDA kernels for the visible GPU(s).
-
-    vLLM's V1 engine runs GPU work in a subprocess, so a hardware/kernel mismatch there
-    (e.g. an old GPU like a V100 that a recent torch wheel no longer ships kernels for)
-    surfaces to the caller as a generic "Engine core initialization failed" error with
-    none of the actual CUDA error text. Checking compute capability against
-    torch.cuda.get_arch_list() upfront avoids waiting through model download/engine
-    startup just to hit that opaque failure, and applies to --backend transformers too
-    since it's the same torch install running on the same GPU.
-    """
-    if not torch.cuda.is_available():
-        return
-
-    supported_archs = set(torch.cuda.get_arch_list())
-    unsupported = []
-    for i in range(torch.cuda.device_count()):
-        major, minor = torch.cuda.get_device_capability(i)
-        if f"sm_{major}{minor}" not in supported_archs:
-            unsupported.append(f"GPU {i}: {torch.cuda.get_device_name(i)} (compute capability {major}.{minor})")
-
-    if unsupported:
-        raise RuntimeError(
-            "This PyTorch build has no CUDA kernels for: " + "; ".join(unsupported) + ". "
-            f"It only supports compute capabilities matching: {sorted(supported_archs)}. "
-            "Both --backend vllm and --backend transformers will fail on this GPU with the current "
-            "torch install. Request a node with a supported GPU, or reinstall a PyTorch build that "
-            "includes this GPU's architecture."
-        )
 
 
 def run_assessment(args: argparse.Namespace) -> tuple[Path, Path, Path]:
