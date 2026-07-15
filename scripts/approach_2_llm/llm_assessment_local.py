@@ -849,7 +849,19 @@ class VLLMBackend:
             engine_kwargs["quantization"] = args.quantization
 
         print(f"Loading vLLM engine from: {model_path} (tensor_parallel_size={tensor_parallel_size})")
-        self.llm = LLM(**engine_kwargs)
+        try:
+            self.llm = LLM(**engine_kwargs)
+        except Exception as exc:
+            if "no kernel image is available" in str(exc).lower():
+                raise RuntimeError(
+                    "vLLM engine startup failed with a CUDA 'no kernel image' error. This means the "
+                    "installed PyTorch build has no kernels for this GPU's compute capability (e.g. "
+                    "PyTorch dropped Volta/V100 sm_70 support in recent releases). This also affects "
+                    "--backend transformers on the same GPU, since it's the same torch install. Fix by "
+                    "requesting a node with a newer GPU (compute capability >= 7.5), or by reinstalling "
+                    "a PyTorch build that supports this GPU's compute capability."
+                ) from exc
+            raise
 
     def batch_generate(self, prompts: list[str]) -> list[str]:
         messages_list = [[{"role": "user", "content": prompt}] for prompt in prompts]
@@ -999,7 +1011,40 @@ def run_vllm(
                 break
 
 
+def check_cuda_compatibility() -> None:
+    """Fail fast if this PyTorch build has no CUDA kernels for the visible GPU(s).
+
+    vLLM's V1 engine runs GPU work in a subprocess, so a hardware/kernel mismatch there
+    (e.g. an old GPU like a V100 that a recent torch wheel no longer ships kernels for)
+    surfaces to the caller as a generic "Engine core initialization failed" error with
+    none of the actual CUDA error text. Checking compute capability against
+    torch.cuda.get_arch_list() upfront avoids waiting through model download/engine
+    startup just to hit that opaque failure, and applies to --backend transformers too
+    since it's the same torch install running on the same GPU.
+    """
+    if not torch.cuda.is_available():
+        return
+
+    supported_archs = set(torch.cuda.get_arch_list())
+    unsupported = []
+    for i in range(torch.cuda.device_count()):
+        major, minor = torch.cuda.get_device_capability(i)
+        if f"sm_{major}{minor}" not in supported_archs:
+            unsupported.append(f"GPU {i}: {torch.cuda.get_device_name(i)} (compute capability {major}.{minor})")
+
+    if unsupported:
+        raise RuntimeError(
+            "This PyTorch build has no CUDA kernels for: " + "; ".join(unsupported) + ". "
+            f"It only supports compute capabilities matching: {sorted(supported_archs)}. "
+            "Both --backend vllm and --backend transformers will fail on this GPU with the current "
+            "torch install. Request a node with a supported GPU, or reinstall a PyTorch build that "
+            "includes this GPU's architecture."
+        )
+
+
 def run_assessment(args: argparse.Namespace) -> tuple[Path, Path, Path]:
+    check_cuda_compatibility()
+
     if args.text_col not in pd.read_csv(args.input_csv, nrows=1).columns:
         raise ValueError(f"Text column {args.text_col!r} was not found in {args.input_csv}")
 
