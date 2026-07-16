@@ -1,18 +1,18 @@
 {
   "nhr": {
-    "_comment": "NHR models — auto-fetched 2026-07-14. Embedding/non-chat and failed-connectivity models excluded.",
+    "_comment": "NHR models — auto-fetched 2026-07-16. Embedding/non-chat and failed-connectivity models excluded.",
     "_source": "https://hub.nhr.fau.de/api/llmgw/v1/models",
     "ibm-granite/granite-4.1-3b": "ibm-granite/granite-4.1-3b",
-    "google/gemma-4-E4B-it": "google/gemma-4-E4B-it",
     "deepseek-ai/DeepSeek-V4-Flash": "deepseek-ai/DeepSeek-V4-Flash",
-    "RedHatAI/Mistral-Small-3.2-24B-Instruct-2506-FP8": "RedHatAI/Mistral-Small-3.2-24B-Instruct-2506-FP8",
-    "Microsoft/Phi-4-mini-instruct": "Microsoft/Phi-4-mini-instruct",
-    "GaleneAI/Magistral-Small-2509-FP8-Dynamic": "GaleneAI/Magistral-Small-2509-FP8-Dynamic",
     "RedHatAI/gemma-4-31B-it-FP8-block": "RedHatAI/gemma-4-31B-it-FP8-block",
-    "gpt-oss-120b": "gpt-oss-120b"
+    "gpt-oss-120b": "gpt-oss-120b",
+    "google/gemma-4-E4B-it": "google/gemma-4-E4B-it",
+    "Microsoft/Phi-4-mini-instruct": "Microsoft/Phi-4-mini-instruct",
+    "RedHatAI/Mistral-Small-3.2-24B-Instruct-2506-FP8": "RedHatAI/Mistral-Small-3.2-24B-Instruct-2506-FP8",
+    "GaleneAI/Magistral-Small-2509-FP8-Dynamic": "GaleneAI/Magistral-Small-2509-FP8-Dynamic"
   },
   "gwdg": {
-    "_comment": "GWDG models — auto-fetched 2026-07-14. Embedding/non-chat and failed-connectivity models excluded.",
+    "_comment": "GWDG models — auto-fetched 2026-07-16. Embedding/non-chat and failed-connectivity models excluded.",
     "_source": "https://chat-ai.academiccloud.de/v1/models",
     "apertus-70b-instruct-2509": "apertus-70b-instruct-2509",
     "deepseek-v4-flash": "deepseek-v4-flash",

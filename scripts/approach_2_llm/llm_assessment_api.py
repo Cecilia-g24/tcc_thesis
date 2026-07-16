@@ -1,29 +1,33 @@
 """
 Run LLM-as-judge assessment on transcripts using prompts built by de_prompt_construction.py.
 
-Only the V1_full_manual_baseline prompt variant is used. By default, every transcript
-across all 5 dimensions in the input CSV is tested (not a dev subsample).
+This script mirrors llm_assessment_local.py, but replaces local generation with an
+OpenAI-compatible API call. It runs one model per invocation, across every transcript
+and every prompt variant (no dev subsampling).
 
-This version is designed for resumable, auditable runs:
+Designed for resumable, auditable runs:
 - id + dimension + variant_id as the unique call key
 - immediate result saving after every call
 - resume support: successful calls are skipped on rerun
 - failed/missing calls are retried by default
 - exponential backoff for rate limits and transient API errors
 - strict parsing/validation of integer scores in {0, 1, 2, 3, 4}
-- per-call runtime and full interaction log (prompt, raw response, retry attempts)
+- full interaction log (prompt, raw response, retry attempts)
+
+Each --model gets its own subfolder under --output-dir (results.csv, results.jsonl,
+interaction_log.jsonl), so multiple API models can be run into the same output-dir
+without colliding.
 
 Default condition:
-    German transcript + German prompt (V1_full_manual_baseline), all rows, all 5 dimensions
+    German transcript + German prompt, all rows, all 5 dimensions, all prompt variants
 
 Run from the repo root or from this script directory:
     python llm_assessment_api.py
 
 Useful options:
-    python llm_assessment_api.py --n-per-dimension 20 --sample-mode random --random-state 42
-    python llm_assessment_api.py --overwrite            # ignore previous results
-    python llm_assessment_api.py --model glm-4.7        # run just this one model
-    python llm_assessment_api.py --all-models           # run every model in configs/api_models.json
+    python llm_assessment_api.py --model glm-4.7                       # run just this one model
+    python llm_assessment_api.py -v V1_full_manual_baseline            # run just this one variant
+    python llm_assessment_api.py --overwrite                           # ignore previous results
 """
 
 from __future__ import annotations
@@ -44,7 +48,7 @@ from dotenv import load_dotenv
 from openai import OpenAI
 from tqdm import tqdm
 
-from de_prompt_construction import build_prompt
+from de_prompt_construction import VARIANTS, build_prompt
 
 load_dotenv()
 
@@ -61,11 +65,6 @@ PROVIDER_ENV = {
 DEFAULT_PROVIDER = "gwdg"
 
 DEFAULT_TEXT_COL = "text"
-DEFAULT_N_PER_DIMENSION = 20
-DEFAULT_SAMPLE_MODE = "all"  # random | first | all
-DEFAULT_RANDOM_STATE = 42
-
-DEFAULT_VARIANT = "V1_full_manual_baseline"
 
 DEFAULT_MODEL = "qwen3-30b-a3b-instruct-2507"
 DEFAULT_TEMPERATURE = 0.0
@@ -81,12 +80,11 @@ RESULT_COLUMNS = [
     "dimension",
     "variant_id",
     "model",
-    "average_score",
     "llm_score",
-    "brief_rationale",
+    "raw_response",
     "error",
     "attempts",
-    "runtime_seconds",
+    "average_score",
     "timestamp",
 ]
 
@@ -96,25 +94,34 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--input-csv", type=Path, default=DEFAULT_INPUT_CSV)
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
     parser.add_argument("--text-col", type=str, default=DEFAULT_TEXT_COL)
-    parser.add_argument("--n-per-dimension", type=int, default=DEFAULT_N_PER_DIMENSION,
-                        help="Rows per dimension, only used when --sample-mode is random or first. "
-                             "Ignored (all rows are used) when --sample-mode is all, which is the default.")
-    parser.add_argument("--sample-mode", choices=["random", "first", "all"], default=DEFAULT_SAMPLE_MODE,
-                        help="'all' (default) tests every transcript across all 5 dimensions. "
-                             "'random'/'first' take a --n-per-dimension dev subsample instead.")
-    parser.add_argument("--random-state", type=int, default=DEFAULT_RANDOM_STATE)
+    parser.add_argument(
+        "-v", "--variants",
+        type=str,
+        default="all",
+        help="Comma-separated list of prompt variant ids to run (e.g. V1_full_manual_baseline), "
+             f"or 'all' (default) to run every variant. Choices: {sorted(VARIANTS)}.",
+    )
     parser.add_argument("--model", type=str, default=DEFAULT_MODEL,
                         help="Run only this model.")
-    parser.add_argument("--all-models", action="store_true",
-                        help="Ignore --model and run the full assessment once for every model "
-                             f"listed in {MODELS_CONFIG_PATH.relative_to(REPO_ROOT)}.")
     parser.add_argument("--temperature", type=float, default=DEFAULT_TEMPERATURE)
     parser.add_argument("--max-tokens", type=int, default=DEFAULT_MAX_TOKENS)
     parser.add_argument("--overwrite", action="store_true",
                         help="Ignore existing result files and start a fresh run.")
     parser.add_argument("--keep-failed", action="store_true",
                         help="Do not retry existing failed/unparseable calls. By default, failed calls are retried.")
-    return parser.parse_args()
+
+    args = parser.parse_args()
+
+    if args.variants.strip().lower() == "all":
+        args.variants = sorted(VARIANTS)
+    else:
+        requested = [v.strip() for v in args.variants.split(",") if v.strip()]
+        unknown = [v for v in requested if v not in VARIANTS]
+        if unknown:
+            parser.error(f"Unknown --variants {unknown}; choices are {sorted(VARIANTS)}.")
+        args.variants = requested
+
+    return args
 
 
 def load_model_provider_map(config_path: Path = MODELS_CONFIG_PATH) -> dict[str, str]:
@@ -150,8 +157,8 @@ def normalize_text_value(value: Any) -> str:
     return str(value).strip()
 
 
-def load_subset(input_csv: Path, n_per_dimension: int, sample_mode: str, random_state: int) -> pd.DataFrame:
-    """Load the dataset and return either all rows or a fixed-size per-dimension dev subset."""
+def load_subset(input_csv: Path) -> pd.DataFrame:
+    """Load the full dataset (every row, every dimension)."""
     df = pd.read_csv(input_csv)
 
     required_cols = {"id", "dimension"}
@@ -159,18 +166,11 @@ def load_subset(input_csv: Path, n_per_dimension: int, sample_mode: str, random_
     if missing:
         raise ValueError(f"Input CSV is missing required columns: {sorted(missing)}")
 
-    if sample_mode == "all" or n_per_dimension <= 0:
-        return df.reset_index(drop=True)
+    return df.reset_index(drop=True)
 
-    if sample_mode == "first":
-        return df.groupby("dimension", group_keys=False).head(n_per_dimension).reset_index(drop=True)
 
-    # Fixed-seed random sample. If a dimension has fewer rows than requested, keep all rows.
-    return (
-        df.groupby("dimension", group_keys=False)
-        .apply(lambda g: g.sample(n=min(n_per_dimension, len(g)), random_state=random_state))
-        .reset_index(drop=True)
-    )
+def sanitize_filename(value: str) -> str:
+    return re.sub(r"[^A-Za-z0-9_.-]+", "_", value).strip("_") or "api_model"
 
 
 def result_key(record: dict[str, Any]) -> tuple[str, str, str]:
@@ -357,29 +357,25 @@ def should_skip_existing(record: dict[str, Any], keep_failed: bool) -> bool:
     return keep_failed
 
 
-def run_assessment(args: argparse.Namespace, model: str) -> tuple[Path, Path, Path]:
-    provider_name = load_model_provider_map().get(model, DEFAULT_PROVIDER)
-    client = make_client(provider_name)
+def resolve_output_paths(args: argparse.Namespace, model: str) -> tuple[Path, Path, Path]:
+    safe_model_name = sanitize_filename(model)
+    model_dir = args.output_dir / safe_model_name
+    model_dir.mkdir(parents=True, exist_ok=True)
+    csv_path = model_dir / "results.csv"
+    jsonl_path = model_dir / "results.jsonl"
+    log_path = model_dir / "interaction_log.jsonl"
+    return csv_path, jsonl_path, log_path
 
-    if args.text_col not in pd.read_csv(args.input_csv, nrows=1).columns:
-        raise ValueError(f"Text column {args.text_col!r} was not found in {args.input_csv}")
 
-    df = load_subset(args.input_csv, args.n_per_dimension, args.sample_mode, args.random_state)
+def prepare_pending_calls(
+    df: pd.DataFrame,
+    args: argparse.Namespace,
+    csv_path: Path,
+) -> tuple[dict[tuple[str, str, str], dict[str, Any]], list[tuple[pd.Series, str]]]:
+    """Plan all (row, variant) calls, load resumable prior results, and return what's left to run."""
+    calls: list[tuple[pd.Series, str]] = [(row, variant_id) for _, row in df.iterrows() for variant_id in args.variants]
+    planned_keys = {(str(row["id"]), str(row["dimension"]), str(variant_id)) for row, variant_id in calls}
 
-    args.output_dir.mkdir(parents=True, exist_ok=True)
-    csv_path = args.output_dir / f"results_{model}.csv"
-    jsonl_path = args.output_dir / f"results_{model}.jsonl"
-    log_path = args.output_dir / f"interaction_log_{model}.jsonl"
-
-    calls: list[tuple[pd.Series, str]] = [(row, DEFAULT_VARIANT) for _, row in df.iterrows()]
-    planned_keys = {
-        (str(row["id"]), str(row["dimension"]), str(variant_id))
-        for row, variant_id in calls
-    }
-
-    # Load previous results, but keep only rows that belong to the currently planned
-    # sample. This prevents accidentally mixing an old first-20 dev run with a new
-    # random dev sample under the same output filename.
     records = [
         rec for rec in load_existing_results(csv_path, overwrite=args.overwrite)
         if result_key(rec) in planned_keys
@@ -398,6 +394,20 @@ def run_assessment(args: argparse.Namespace, model: str) -> tuple[Path, Path, Pa
     print(f"Existing result rows for this planned sample: {len(records)}")
     print(f"Pending calls to run: {len(pending_calls)}")
 
+    return records_by_key, pending_calls
+
+
+def run_assessment(args: argparse.Namespace, model: str) -> tuple[Path, Path, Path]:
+    provider_name = load_model_provider_map().get(model, DEFAULT_PROVIDER)
+    client = make_client(provider_name)
+
+    if args.text_col not in pd.read_csv(args.input_csv, nrows=1).columns:
+        raise ValueError(f"Text column {args.text_col!r} was not found in {args.input_csv}")
+
+    df = load_subset(args.input_csv)
+    csv_path, jsonl_path, log_path = resolve_output_paths(args, model)
+    records_by_key, pending_calls = prepare_pending_calls(df, args, csv_path)
+
     consecutive_rate_limit_failures = 0
 
     with log_path.open("a", encoding="utf-8") as log_f:
@@ -409,7 +419,6 @@ def run_assessment(args: argparse.Namespace, model: str) -> tuple[Path, Path, Pa
                 variant_id=variant_id,
             )
 
-            call_t0 = time.perf_counter()
             result = call_model(
                 client=client,
                 prompt=prompt,
@@ -417,7 +426,6 @@ def run_assessment(args: argparse.Namespace, model: str) -> tuple[Path, Path, Pa
                 temperature=args.temperature,
                 max_tokens=args.max_tokens,
             )
-            runtime_seconds = round(time.perf_counter() - call_t0, 3)
 
             timestamp = dt.datetime.now().isoformat(timespec="seconds")
             error = result.get("error")
@@ -426,20 +434,16 @@ def run_assessment(args: argparse.Namespace, model: str) -> tuple[Path, Path, Pa
             elif error is None:
                 consecutive_rate_limit_failures = 0
 
-            parsed_json = result.get("parsed_json") or {}
-            brief_rationale = parsed_json.get("brief_rationale", "")
-
             record = {
                 "id": str(row["id"]),
                 "dimension": str(row["dimension"]),
                 "variant_id": str(variant_id),
                 "model": model,
-                "average_score": row.get("average_score", ""),
                 "llm_score": "" if result.get("llm_score") is None else result.get("llm_score"),
-                "brief_rationale": "" if brief_rationale is None else brief_rationale,
+                "raw_response": result.get("raw_response"),
                 "error": "" if error is None else error,
                 "attempts": result.get("attempts"),
-                "runtime_seconds": runtime_seconds,
+                "average_score": row.get("average_score", ""),
                 "timestamp": timestamp,
             }
 
@@ -456,7 +460,6 @@ def run_assessment(args: argparse.Namespace, model: str) -> tuple[Path, Path, Pa
                 "model": model,
                 "provider": provider_name,
                 "attempts": record["attempts"],
-                "runtime_seconds": runtime_seconds,
                 "attempt_log": result.get("attempt_log"),
                 "prompt": prompt,
                 "raw_response": result.get("raw_response"),
@@ -480,19 +483,6 @@ def run_assessment(args: argparse.Namespace, model: str) -> tuple[Path, Path, Pa
 
 def main() -> None:
     args = parse_args()
-
-    if args.all_models:
-        models = list(load_model_provider_map().keys())
-        print(f"Running assessment for {len(models)} models: {models}\n")
-        for model in tqdm(models, desc="Models", unit="model"):
-            try:
-                output_csv, output_jsonl, output_log = run_assessment(args, model)
-                tqdm.write(f"[{model}] Saved results:         {output_csv}")
-                tqdm.write(f"[{model}] Saved results:         {output_jsonl}")
-                tqdm.write(f"[{model}] Saved interaction log: {output_log}")
-            except Exception as exc:
-                tqdm.write(f"[{model}] failed and was skipped: {exc}")
-        return
 
     output_csv, output_jsonl, output_log = run_assessment(args, args.model)
     print(f"\nSaved results:         {output_csv}")
