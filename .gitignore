@@ -12,3 +12,7 @@ __pycache__/
 *.pyc
 .venv/
 .ipynb_checkpoints/
+
+# Runtime log files
+*.log
+*_log.jsonl
