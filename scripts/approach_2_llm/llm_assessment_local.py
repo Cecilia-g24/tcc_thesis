@@ -336,11 +336,15 @@ def load_subset(input_csv: Path, n_per_dimension: int, sample_mode: str, random_
         return df.groupby("dimension", group_keys=False).head(n_per_dimension).reset_index(drop=True)
 
     # Fixed-seed random sample. If a dimension has fewer rows than requested, keep all rows.
-    return (
-        df.groupby("dimension", group_keys=False)
-        .apply(lambda g: g.sample(n=min(n_per_dimension, len(g)), random_state=random_state))
-        .reset_index(drop=True)
-    )
+    # Iterates the groupby directly (rather than groupby(...).apply(...)) so every group
+    # keeps all of its original columns, including "dimension" itself, regardless of
+    # pandas version (recent pandas can exclude the grouping column from what's passed
+    # into an apply() callable, dropping "dimension" from the result).
+    parts = [
+        group.sample(n=min(n_per_dimension, len(group)), random_state=random_state)
+        for _, group in df.groupby("dimension")
+    ]
+    return pd.concat(parts, ignore_index=True)
 
 
 def result_key(record: dict[str, Any]) -> tuple[str, str, str]:
