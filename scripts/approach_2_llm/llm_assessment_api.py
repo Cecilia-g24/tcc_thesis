@@ -309,9 +309,11 @@ def call_model(client: OpenAI, prompt: str, model: str, temperature: float, max_
                 delay = backoff_delay(attempt, is_rate_limit_error(error))
                 attempt_record["retry_delay_seconds"] = round(delay, 1)
                 result["attempt_log"].append(attempt_record)
+                tqdm.write(f"[{model}] attempt {attempt}/{MAX_RETRIES} failed: {error} — retrying in {delay:.1f}s")
                 time.sleep(delay)
             else:
                 result["attempt_log"].append(attempt_record)
+                tqdm.write(f"[{model}] attempt {attempt}/{MAX_RETRIES} failed: {error} — giving up on this call")
 
     return result
 
