@@ -9711,3 +9711,155 @@ AU01.001424,d2_lack_of_knowledge,V3_no_rationale,RedHatAI/Mistral-Small-3.2-24B-
   ""score"": 2
 }
 ```",,1,1.333,2026-07-17T12:04:52
+AU01.001424,d2_lack_of_knowledge,V4_evidence_before_score,RedHatAI/Mistral-Small-3.2-24B-Instruct-2506-FP8,2,"```json
+{
+  ""brief_rationale"": ""Die Reaktion zeigt eine konkrete Nachfrage zur unklaren Aussage der Patient:in ('Wie meinen Sie, dass Ihre Gallenblase ist geplatzt?'). Sie klärt die ungenaue Aussage, indem sie nach einer genaueren Erklärung fragt, ohne eigenes Nichtwissen zu benennen oder die Expertise der Patient:in zu betonen. Die Frage ist direkt und angemessen, erfüllt aber nicht alle Leistungsmerkmale für eine höhere Bewertung."",
+  ""score"": 2
+}
+```",,1,1.333,2026-07-18T11:50:43
+AU01.001424,d2_lack_of_knowledge,V5_structured_checklist,RedHatAI/Mistral-Small-3.2-24B-Instruct-2506-FP8,2,"```json
+{
+  ""score"": 2,
+  ""brief_rationale"": ""Die Reaktion klärt eine ungenaue Aussage der Patientin/des Patienten, indem sie nachfragt, was genau gemeint ist. Allerdings fehlt die offene Benennung von Nichtwissen oder Unsicherheiten der Therapeutin/des Therapeuten, sowie die Betonung der Expertise der Patientin/des Patienten. Die Reaktion ist angemessen und leicht verständlich, erfüllt aber nicht alle Kriterien für eine höhere Bewertung.""
+}
+```",,1,1.333,2026-07-18T11:50:45
+AU01.001424,d2_lack_of_knowledge,V6_minimal_natural,RedHatAI/Mistral-Small-3.2-24B-Instruct-2506-FP8,2,"```json
+{
+  ""score"": 2,
+  ""brief_rationale"": ""Die therapeutische Reaktion fragt nach, was die Patient:in mit der Aussage 'Gallenblase ist geplatzt' meint, was eine Ermutigung zur genaueren Erklärung darstellt. Allerdings fehlt eine explizite Aufforderung, die Aussage genauer zu erklären, was die Bewertung auf '2' begrenzt.""
+}
+```",,1,1.333,2026-07-18T11:50:47
+AU01.001425,d2_lack_of_knowledge,V1_full_manual_baseline,RedHatAI/Mistral-Small-3.2-24B-Instruct-2506-FP8,3,"```json
+{
+  ""score"": 3,
+  ""brief_rationale"": ""Die Reaktion zeigt eine klare Nachfrage zur Veranschaulichung der Patient:innenaussage (Was ist die Hauptherausforderung?), was ein Leistungsmerkmal der Dimension erfüllt. Allerdings fehlt die explizite Benennung von Nichtwissen oder Unsicherheit, was eine höhere Bewertung verhindert. Die Frage ist angemessen und fördert die aktive Rolle der Patient:innen, aber nicht alle Leistungsmerkmale sind umgesetzt.""
+}
+```",,1,2.333,2026-07-18T11:50:49
+AU01.001425,d2_lack_of_knowledge,V2_no_anchors,RedHatAI/Mistral-Small-3.2-24B-Instruct-2506-FP8,2,"```json
+{
+  ""score"": 2,
+  ""brief_rationale"": ""Die Reaktion erfüllt die Aufgabenstellung, indem sie eine ungenaue Patient:innenaussage klärt (Rückfrage 'Habe ich das richtig verstanden?') und nach weiteren Details fragt ('Woran merken Sie es oder was ist da die Hauptherausforderung?'). Es werden keine Wissenslücken oder Unsicherheiten benannt, aber die Nachfrage ist angemessen und fördert die aktive Rolle der Patient:innen.""
+}
+```",,1,2.333,2026-07-18T11:50:51
+AU01.001425,d2_lack_of_knowledge,V3_no_rationale,RedHatAI/Mistral-Small-3.2-24B-Instruct-2506-FP8,2,"```json
+{
+  ""score"": 2
+}
+```",,1,2.333,2026-07-18T11:50:52
+AU01.001425,d2_lack_of_knowledge,V4_evidence_before_score,RedHatAI/Mistral-Small-3.2-24B-Instruct-2506-FP8,4,"```json
+{
+  ""brief_rationale"": ""Die Therapeut:in klärt zunächst die Aussage der Patient:in, indem sie nachfragt, ob sie die Situation richtig verstanden hat. Anschließend wird konkret nachgefragt, woran die Patient:in die mangelnde Akzeptanz merkt oder was die Hauptherausforderung ist. Dies entspricht den Leistungsmerkmalen, da ungenaue Aussagen geklärt und spezifische Nachfragen gestellt werden. Die Reaktion ist angemessen und fördert die aktive Rolle der Patient:in."",
+  ""score"": 4
+}
+```",,1,2.333,2026-07-18T11:50:54
+AU01.001425,d2_lack_of_knowledge,V5_structured_checklist,RedHatAI/Mistral-Small-3.2-24B-Instruct-2506-FP8,3,"```json
+{
+  ""score"": 3,
+  ""brief_rationale"": ""Die Reaktion klärt ungenaue Aussagen (Kriterium 1) und sichert das Verständnis durch Rückfragen (Kriterium 5) ab. Sie benennt zwar nicht explizit eigenes Nichtwissen (Kriterium 2), aber die Nachfrage nach konkreten Beispielen oder Herausforderungen zeigt proaktives Interesse. Die Formulierung ist klar und ermutigt die Patientin, aktiv zu werden (Kriterium 6). Eine höhere Bewertung (4) wäre möglich, wenn die Therapeutin explizit eigenes Nichtwissen oder Unsicherheiten benennen würde (Kriterium 2/3).""
+}
+```",,1,2.333,2026-07-18T11:50:57
+AU01.001425,d2_lack_of_knowledge,V6_minimal_natural,RedHatAI/Mistral-Small-3.2-24B-Instruct-2506-FP8,3,"```json
+{
+  ""score"": 3,
+  ""brief_rationale"": ""Die therapeutische Reaktion erfüllt die Aufgabenstellung, indem sie die Patient:in auffordert, ihre Aussage genauer zu erklären (z. B. 'Woran merken Sie es oder was ist da die Hauptherausforderung?'). Die Formulierung ist klar und proaktiv, könnte aber noch etwas präziser sein, um das Nichtwissen der Therapeut:in expliziter zu thematisieren (z. B. 'Ich verstehe, dass es schwierig ist – können Sie mir genauer beschreiben, wie sich das für Sie anfühlt?').""
+}
+```",,1,2.333,2026-07-18T11:50:59
+AU01.001426,d2_lack_of_knowledge,V1_full_manual_baseline,RedHatAI/Mistral-Small-3.2-24B-Instruct-2506-FP8,3,"```json
+{
+  ""score"": 3,
+  ""brief_rationale"": ""Die Therapeutin zeigt proaktiven Umgang mit Nichtwissen, indem sie ihre Wissenslücken benennt und die Patientin um Hilfe bittet, um deren Perspektive besser zu verstehen. Sie betont die Expertise der Patientin und ermutigt sie, eine aktive Rolle einzunehmen. Allerdings fehlen konkrete Nachfragen zu ungenauen Aussagen, was eine höhere Bewertung verhindert.""
+}
+```",,1,3.667,2026-07-18T11:51:01
+AU01.001426,d2_lack_of_knowledge,V2_no_anchors,RedHatAI/Mistral-Small-3.2-24B-Instruct-2506-FP8,3,"```json
+{
+  ""score"": 3,
+  ""brief_rationale"": ""Die Reaktion zeigt eine gute Umsetzung der Zieldimension, indem sie die Expertise der Patient:in betont, eigenes Nichtwissen offen benennt und eine kooperative Haltung einnimmt. Es fehlen jedoch konkrete Nachfragen oder Rückfragen, um ungenaue Aussagen zu klären, was die Bewertung auf 3 begrenzt.""
+}
+```",,1,3.667,2026-07-18T11:51:04
+AU01.001426,d2_lack_of_knowledge,V3_no_rationale,RedHatAI/Mistral-Small-3.2-24B-Instruct-2506-FP8,2,"```json
+{
+  ""score"": 2
+}
+```",,1,3.667,2026-07-18T11:51:04
+AU01.001426,d2_lack_of_knowledge,V4_evidence_before_score,RedHatAI/Mistral-Small-3.2-24B-Instruct-2506-FP8,2,"```json
+{
+  ""brief_rationale"": ""Die Therapeut:in zeigt Empathie und betont die Expertise der Patient:in, stellt jedoch keine konkreten Nachfragen zu unklaren Aussagen. Es fehlt an gezielten Rückfragen, um Aussagen genauer zu verstehen, und es wird kein eigenes Nichtwissen offen benannt. Die Reaktion ist eher allgemein und nicht spezifisch auf die Zieldimension ausgerichtet."",
+  ""score"": 2
+}
+```",,1,3.667,2026-07-18T11:51:06
+AU01.001426,d2_lack_of_knowledge,V5_structured_checklist,RedHatAI/Mistral-Small-3.2-24B-Instruct-2506-FP8,3,"```json
+{
+  ""score"": 3,
+  ""brief_rationale"": ""Die Reaktion zeigt eine offene Haltung gegenüber dem Nichtwissen der Therapeutin (Kriterium 2) und betont die Expertise der Patientin (Kriterium 4). Es wird eine Einladung zur aktiven Rolle der Patientin formuliert (Kriterium 6), allerdings fehlen konkrete Nachfragen zu ungenauen Aussagen (Kriterium 1) oder die explizite Benennung von Unsicherheiten (Kriterium 3). Die Reaktion ist angemessen und ermutigend, aber nicht so präzise wie die Ankerbeispiele für Bewertung 4.""
+}
+```",,1,3.667,2026-07-18T11:51:09
+AU01.001426,d2_lack_of_knowledge,V6_minimal_natural,RedHatAI/Mistral-Small-3.2-24B-Instruct-2506-FP8,3,"```json
+{
+  ""score"": 3,
+  ""brief_rationale"": ""Die Therapeutin zeigt proaktiven Umgang mit Nichtwissen, indem sie die Patientin aktiv einbindet, um ihre Perspektive zu verstehen. Sie formuliert eine klare Bitte um Hilfe, um die Lücke im Verständnis zu schließen. Die Reaktion ist überdurchschnittlich, aber nicht exzellent, da sie keine konkrete Frage zur Präzisierung der Aussage stellt.""
+}
+```",,1,3.667,2026-07-18T11:51:11
+AU01.001443,d2_lack_of_knowledge,V1_full_manual_baseline,RedHatAI/Mistral-Small-3.2-24B-Instruct-2506-FP8,3,"```json
+{
+  ""score"": 3,
+  ""brief_rationale"": ""Die Therapeut:in zeigt proaktiven Umgang mit Nichtwissen, indem sie die Patient:in bittet, ihre Aussage genauer zu erklären. Sie benennt offen ihre kulturelle Wissenslücke und ermutigt die Patient:in, ihre Perspektive zu erläutern. Allerdings fehlt eine konkrete Nachfrage zu einem spezifischen Begriff oder einer unklaren Aussage, was eine Bewertung von 4 verhindert. Die Reaktion ist angemessen und fördert die aktive Rolle der Patient:in.""
+}
+```",,1,3.667,2026-07-18T11:51:13
+AU01.001443,d2_lack_of_knowledge,V2_no_anchors,RedHatAI/Mistral-Small-3.2-24B-Instruct-2506-FP8,3,"```json
+{
+  ""score"": 3,
+  ""brief_rationale"": ""Die Reaktion zeigt proaktiven Umgang mit Nichtwissen, indem die Therapeut:in offen zugibt, die Aussage nicht genau zu verstehen, und die Patient:in bittet, dies genauer zu erklären. Es wird eine konkrete Nachfrage gestellt, die die Patient:in ermutigt, ihre Aussage zu präzisieren. Die Formulierung ist angemessen und förderlich, auch wenn nicht alle Leistungsmerkmale (z. B. Betonung der Expertise der Patient:in) explizit genannt werden. Die Reaktion ist klar und fördert die aktive Rolle der Patient:in.""
+}
+```",,1,3.667,2026-07-18T11:51:16
+AU01.001443,d2_lack_of_knowledge,V3_no_rationale,RedHatAI/Mistral-Small-3.2-24B-Instruct-2506-FP8,3,"```json
+{
+  ""score"": 3
+}
+```",,1,3.667,2026-07-18T11:51:16
+AU01.001443,d2_lack_of_knowledge,V4_evidence_before_score,RedHatAI/Mistral-Small-3.2-24B-Instruct-2506-FP8,4,"```json
+{
+  ""brief_rationale"": ""Die Therapeut:in zeigt offenes Nichtwissen und bittet die Patient:in, ihre Aussage genauer zu erklären. Sie verwendet eine klare, einladende Formulierung ('Deswegen würde ich Sie bitten, dass Sie mir das noch mal erklären und mir das ein bisschen genauer erläutern.') und stellt eine konkrete Nachfrage ('Was würde es über eine Frau aussagen, wenn sie sich ihrer Familien gegenüber öffnen mit ihren psychischen Problemen?'). Dies entspricht den Leistungsmerkmalen des Manuals, insbesondere der Klärung ungenauer Aussagen und der Betonung der Expertise der Patient:in."",
+  ""score"": 4
+}
+```",,1,3.667,2026-07-18T11:51:19
+AU01.001443,d2_lack_of_knowledge,V5_structured_checklist,RedHatAI/Mistral-Small-3.2-24B-Instruct-2506-FP8,3,"```json
+{
+  ""score"": 3,
+  ""brief_rationale"": ""Die Reaktion zeigt proaktiven Umgang mit Nichtwissen, indem sie die Patientin bittet, ihre Aussage genauer zu erklären (Kriterium 1, 5, 6). Die Therapeutin benennt offen ihr eigenes Nichtwissen (Kriterium 2) und betont die Expertise der Patientin (Kriterium 4). Allerdings fehlt eine explizite Benennung von Unsicherheiten (Kriterium 3), was die Bewertung auf 3 begrenzt.""
+}
+```",,1,3.667,2026-07-18T11:51:21
+AU01.001443,d2_lack_of_knowledge,V6_minimal_natural,RedHatAI/Mistral-Small-3.2-24B-Instruct-2506-FP8,4,"```json
+{
+  ""score"": 4,
+  ""brief_rationale"": ""Die therapeutische Reaktion erfüllt die Zieldimension 'Proaktiver Umgang mit Nichtwissen' exzellent, da sie die Patient:innen explizit auffordert, ihre Aussage genauer zu erklären, und dies mit einer respektvollen und einladenden Formulierung verbindet. Die Frage ist präzise und fördert eine tiefere Erläuterung, ohne die Patient:innen zu überfordern.""
+}
+```",,1,3.667,2026-07-18T11:51:24
+AU01.001444,d2_lack_of_knowledge,V1_full_manual_baseline,RedHatAI/Mistral-Small-3.2-24B-Instruct-2506-FP8,2,"```json
+{
+  ""score"": 2,
+  ""brief_rationale"": ""Die Reaktion erfüllt die Aufgabenstellung, indem sie die Patient:in auffordert, ihre Aussage genauer zu erläutern. Allerdings fehlt eine konkrete Nachfrage zu ungenauen Begriffen oder eine Benennung von Wissenslücken, was eine höhere Bewertung verhindert.""
+}
+```",,1,2.333,2026-07-18T11:51:25
+AU01.001444,d2_lack_of_knowledge,V2_no_anchors,RedHatAI/Mistral-Small-3.2-24B-Instruct-2506-FP8,2,"```json
+{
+  ""score"": 2,
+  ""brief_rationale"": ""Die Reaktion erfüllt die Aufgabenstellung, indem sie die Patient:in auffordert, ihre Aussage genauer zu erläutern. Es wird eine klare Nachfrage gestellt, um das Verständnis zu sichern. Allerdings werden keine weiteren Leistungsmerkmale wie das Benennen eigener Wissenslücken oder die Betonung der Expertise der Patient:in umgesetzt. Die Reaktion ist angemessen und verständlich.""
+}
+```",,1,2.333,2026-07-18T11:51:27
+AU01.001444,d2_lack_of_knowledge,V3_no_rationale,RedHatAI/Mistral-Small-3.2-24B-Instruct-2506-FP8,2,"```json
+{
+  ""score"": 2
+}
+```",,1,2.333,2026-07-18T11:51:28
+AU01.001444,d2_lack_of_knowledge,V4_evidence_before_score,RedHatAI/Mistral-Small-3.2-24B-Instruct-2506-FP8,2,"```json
+{
+  ""brief_rationale"": ""Die Therapeut:in zeigt Interesse an einer genaueren Erklärung der Belastungen der Patient:in, indem sie nachfragt, was genau diese belastet. Dies entspricht dem Leistungsmerkmal, ungenaue Aussagen zu klären. Allerdings wird keine eigene Wissenslücke oder Unsicherheit benannt, und es fehlt eine explizite Betonung der Expertise der Patient:in. Die Frage ist klar und angemessen, erfüllt aber nicht alle Kriterien für eine exzellente Bewertung."",
+  ""score"": 2
+}
+```",,1,2.333,2026-07-18T11:51:31
+AU01.001444,d2_lack_of_knowledge,V5_structured_checklist,RedHatAI/Mistral-Small-3.2-24B-Instruct-2506-FP8,3,"```json
+{
+  ""score"": 3,
+  ""brief_rationale"": ""Die Reaktion klärt ungenaue Aussagen der Patientin, indem sie nach einer genaueren Erläuterung bittet (Kriterium 1). Sie zeigt keine explizite Benennung von Nichtwissen oder Unsicherheiten (Kriterien 2 und 3), betont aber auch nicht die Expertise der Patientin (Kriterium 4). Das Verständnis wird durch die Rückfrage gesichert (Kriterium 5), und die Patientin wird ermutigt, eine aktivere Rolle einzunehmen (Kriterium 6). Die Reaktion ist angemessen und verständlich, erfüllt aber nicht alle Kriterien vollständig, daher die Bewertung 3.""
+}
+```",,1,2.333,2026-07-18T11:51:33
