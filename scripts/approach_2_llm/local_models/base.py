@@ -2,9 +2,10 @@
 
 Mirrors the shape of tmp/Qwen_llm.py: a transformers-backend class that loads the model
 once and exposes `.chat(messages)`, and a vLLM-backend class that loads the engine once
-and exposes `.batch_chat(messages_list)` / `.chat(messages)`. Decoding params (max
-tokens, temperature, top_p) are fixed at construction time, same as tmp/Qwen_llm.py, so
-callers just pass chat messages in and get text back.
+and exposes `.batch_chat(messages_list)` / `.chat(messages)`. Decoding parameters are
+fixed at construction time. Temperature-zero runs are explicitly greedy: Transformers
+uses ``do_sample=False`` with one beam/sequence, while vLLM uses ``temperature=0``,
+``top_p=1``, and one output. Callers only pass chat messages and receive text.
 
 Family files (qwen.py, llama.py, ...) subclass these and override `chat_template_kwargs()`
 only where a model's chat template needs family-specific options (e.g. Qwen3's
@@ -31,8 +32,9 @@ class BaseLocalModel:
         self,
         model_path: str | Path,
         max_new_tokens: int = 1024,
-        temperature: float = 0.1,
-        top_p: float = 0.95,
+        temperature: float = 0.0,
+        top_p: float = 1.0,
+        generation_seed: int | None = 42,
         dtype: str = "auto",
         device_map: str | None = "auto",
         trust_remote_code: bool = True,
@@ -51,7 +53,8 @@ class BaseLocalModel:
         self.model_path = model_path
         self.max_new_tokens = max_new_tokens
         self.temperature = temperature
-        self.top_p = top_p
+        self.top_p = 1.0 if temperature == 0.0 else top_p
+        self.generation_seed = generation_seed
         self.disable_thinking = disable_thinking
 
         print(f"Loading tokenizer from: {model_path}")
@@ -102,6 +105,8 @@ class BaseLocalModel:
         generation_kwargs: dict[str, Any] = {
             "max_new_tokens": self.max_new_tokens,
             "do_sample": do_sample,
+            "num_beams": 1,
+            "num_return_sequences": 1,
             "pad_token_id": self.tokenizer.pad_token_id
             if self.tokenizer.pad_token_id is not None
             else self.tokenizer.eos_token_id,
@@ -110,6 +115,13 @@ class BaseLocalModel:
         if do_sample:
             generation_kwargs["temperature"] = self.temperature
             generation_kwargs["top_p"] = self.top_p
+
+        # The seed is irrelevant for greedy decoding, but it makes positive-temperature
+        # runs reproducible on the same software/hardware stack where possible.
+        if self.generation_seed is not None:
+            torch.manual_seed(self.generation_seed)
+            if torch.cuda.is_available():
+                torch.cuda.manual_seed_all(self.generation_seed)
 
         with torch.inference_mode():
             output_ids = self.model.generate(**inputs, **generation_kwargs)
@@ -125,8 +137,9 @@ class BaseVLLMModel:
         self,
         model_path: str | Path,
         max_new_tokens: int = 1024,
-        temperature: float = 0.1,
-        top_p: float = 0.95,
+        temperature: float = 0.0,
+        top_p: float = 1.0,
+        generation_seed: int | None = 42,
         dtype: str = "auto",
         trust_remote_code: bool = True,
         local_files_only: bool = True,
@@ -153,6 +166,9 @@ class BaseVLLMModel:
         if local_files_only:
             os.environ.setdefault("HF_HUB_OFFLINE", "1")
 
+        self.temperature = temperature
+        self.top_p = 1.0 if temperature == 0.0 else top_p
+        self.generation_seed = generation_seed
         self.disable_thinking = disable_thinking
 
         # Render prompts ourselves via the tokenizer (same code path as the transformers
@@ -167,10 +183,12 @@ class BaseVLLMModel:
             local_files_only=local_files_only,
         )
 
-        do_sample = temperature > 0
+        do_sample = self.temperature > 0
         self.sampling_params = SamplingParams(
-            temperature=temperature if do_sample else 0.0,
-            top_p=top_p if do_sample else 1.0,
+            temperature=self.temperature if do_sample else 0.0,
+            top_p=self.top_p if do_sample else 1.0,
+            n=1,
+            seed=self.generation_seed,
             max_tokens=max_new_tokens,
         )
 

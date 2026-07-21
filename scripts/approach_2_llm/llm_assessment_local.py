@@ -29,14 +29,19 @@ Designed for resumable, auditable development runs:
 - immediate result saving after every call (transformers) or every batch (vLLM)
 - resume support: successful calls are skipped on rerun
 - failed/missing calls are retried by default on rerun
-- strict parsing/validation of integer scores in {0, 1, 2, 3, 4}
+- responses are parsed and validated against integer scores in {0, 1, 2, 3, 4}
+- greedy decoding enforced inside local_models/base.py for temperature-zero runs
+- inference/runtime metadata recorded for auditability
 
 Each --model-alias gets its own subfolder under --output-dir (results.csv, results.jsonl,
 interaction_log.jsonl), so multiple local models can be run into the same output-dir
 without colliding.
 
 Default condition:
-    German transcript + German prompt (override --input-csv/--text-col for English)
+    German transcript + German prompt (override --input-csv/--text-col for English),
+    all rows, all 5 dimensions, all prompt variants -- same coverage as
+    llm_assessment_api.py by default. Pass --n-per-dimension/--sample-mode for a
+    fixed-size dev subsample instead.
 
 Run from the repo root or from this script directory:
     python scripts/approach_2_llm/llm_assessment_local.py
@@ -46,8 +51,7 @@ folder) and -a/--model-alias defaults to that folder name, so you don't need to 
 either "../models/" or repeat the model name as an alias.
 
 Useful options:
-    python scripts/approach_2_llm/llm_assessment_local.py --n-per-dimension 20 --sample-mode random --random-state 42
-    python scripts/approach_2_llm/llm_assessment_local.py --n-per-dimension 0     # run all rows
+    python scripts/approach_2_llm/llm_assessment_local.py --n-per-dimension 20 --sample-mode random --random-state 42  # dev subsample
     python scripts/approach_2_llm/llm_assessment_local.py -m qwen3_30b_instruct -v V1_full_manual_baseline
     python scripts/approach_2_llm/llm_assessment_local.py -m qwen3_235b_instruct --tensor-parallel-size 8
     python scripts/approach_2_llm/llm_assessment_local.py --backend transformers -m llammlein_1b
@@ -62,11 +66,14 @@ import gc
 import json
 import math
 import os
+import platform
 import random
 import re
 import time
 from pathlib import Path
 from typing import Any
+
+from importlib import metadata as importlib_metadata
 
 import pandas as pd
 import torch
@@ -75,6 +82,7 @@ from tqdm import tqdm
 try:
     # Works when this file is placed next to de_prompt_construction.py.
     from de_prompt_construction import VARIANTS, build_prompt
+    from results_schema import CORE_RESULT_COLUMNS
 except ModuleNotFoundError:
     # Works when running from unusual working directories.
     import sys
@@ -83,6 +91,7 @@ except ModuleNotFoundError:
     if str(THIS_DIR) not in sys.path:
         sys.path.insert(0, str(THIS_DIR))
     from de_prompt_construction import VARIANTS, build_prompt
+    from results_schema import CORE_RESULT_COLUMNS
 
 try:
     from local_models import (
@@ -111,20 +120,21 @@ except ModuleNotFoundError:
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_INPUT_CSV = REPO_ROOT / "data" / "data_clean" / "01_csvs_for_liwc_manual_input" / "full_dataset_de.csv"
-DEFAULT_OUTPUT_DIR = REPO_ROOT / "results" / "approach2" / "de_text_de_prompt_results"
+DEFAULT_OUTPUT_DIR = REPO_ROOT / "results" / "approach2" / "de_text_de_prompt_results" / "local_results"
 
 # In the VS Code server view, models/ and tcc/ appear to be sibling folders.
 # Override this with --model-path if your model is elsewhere.
 DEFAULT_MODEL_PATH = REPO_ROOT.parent / "models" / "qwen3_30b_instruct"
 
 DEFAULT_TEXT_COL = "text"
-DEFAULT_N_PER_DIMENSION = 20
-DEFAULT_SAMPLE_MODE = "random"  # random | first | all
+DEFAULT_N_PER_DIMENSION = 0  # 0 = all rows, matching llm_assessment_api.py's uncapped default
+DEFAULT_SAMPLE_MODE = "all"  # random | first | all
 DEFAULT_RANDOM_STATE = 42
+DEFAULT_GENERATION_SEED = 42
 
 DEFAULT_BACKEND = "vllm"  # vllm | transformers
 DEFAULT_TEMPERATURE = 0.0
-DEFAULT_TOP_P = 0.95
+DEFAULT_TOP_P = 1.0
 DEFAULT_MAX_NEW_TOKENS = 1024
 DEFAULT_VLLM_BATCH_SIZE = 16
 DEFAULT_GPU_MEMORY_UTILIZATION = 0.90
@@ -134,18 +144,20 @@ BASE_RETRY_DELAY_S = 10
 MAX_RETRY_DELAY_S = 120
 STOP_AFTER_CONSECUTIVE_RUNTIME_FAILURES = 3
 
-RESULT_COLUMNS = [
-    "id",
-    "dimension",
-    "variant_id",
-    "model",
+# Core columns (shared name/semantics with llm_assessment_api.py's RESULT_COLUMNS) plus
+# this script's own local-backend-specific columns, appended after.
+RESULT_COLUMNS = CORE_RESULT_COLUMNS + [
     "model_path",
-    "llm_score",
-    "raw_response",
-    "error",
-    "attempts",
-    "average_score",
-    "timestamp",
+    "backend_version",
+    "torch_version",
+    "transformers_version",
+    "python_version",
+    "gpu",
+    "dtype",
+    "quantization",
+    "do_sample",
+    "num_beams",
+    "num_return_sequences",
 ]
 
 
@@ -158,10 +170,23 @@ def parse_args() -> argparse.Namespace:
         "--n-per-dimension",
         type=int,
         default=DEFAULT_N_PER_DIMENSION,
-        help="Rows per dimension for dev runs. Use 0 or a negative value for all rows.",
+        help="Rows per dimension for dev runs. Default 0 (or any value <= 0) runs every row, "
+             "matching llm_assessment_api.py. Pass a positive number for a fixed-size dev subsample.",
     )
     parser.add_argument("--sample-mode", choices=["random", "first", "all"], default=DEFAULT_SAMPLE_MODE)
     parser.add_argument("--random-state", type=int, default=DEFAULT_RANDOM_STATE)
+    parser.add_argument(
+        "--generation-seed",
+        type=int,
+        default=DEFAULT_GENERATION_SEED,
+        help="Seed Python/PyTorch and pass the same seed into the local backend. Greedy decoding does not "
+             "sample, but a fixed seed improves auditability and supports reproducible sampling runs.",
+    )
+    parser.add_argument(
+        "--deterministic-algorithms",
+        action="store_true",
+        help="Request deterministic PyTorch algorithms where available (warn-only). This can reduce speed.",
+    )
     parser.add_argument(
         "-v", "--variants",
         type=str,
@@ -196,8 +221,18 @@ def parse_args() -> argparse.Namespace:
              "with --model-path) to auto-detect the model family in local_models/. "
              "Defaults to the --model-path folder name.",
     )
-    parser.add_argument("--temperature", type=float, default=DEFAULT_TEMPERATURE)
-    parser.add_argument("--top-p", type=float, default=DEFAULT_TOP_P)
+    parser.add_argument(
+        "--temperature",
+        type=float,
+        default=DEFAULT_TEMPERATURE,
+        help="Generation temperature. At 0.0 this script explicitly requests greedy decoding.",
+    )
+    parser.add_argument(
+        "--top-p",
+        type=float,
+        default=DEFAULT_TOP_P,
+        help="Nucleus-sampling cutoff. Normalized to the neutral value 1.0 when temperature=0.",
+    )
     parser.add_argument("--max-new-tokens", type=int, default=DEFAULT_MAX_NEW_TOKENS)
     parser.add_argument(
         "--dtype",
@@ -308,7 +343,80 @@ def parse_args() -> argparse.Namespace:
             parser.error(f"Unknown --variants {unknown}; choices are {sorted(VARIANTS)}.")
         args.variants = requested
 
+    if args.temperature < 0:
+        parser.error("--temperature must be >= 0.")
+    if not 0 < args.top_p <= 1:
+        parser.error("--top-p must be in the interval (0, 1].")
+    if args.max_new_tokens <= 0:
+        parser.error("--max-new-tokens must be positive.")
+
+    # For greedy decoding, top_p is unused. Setting it to 1.0 avoids ambiguous or
+    # backend-specific treatment of a leftover sampling parameter.
+    if args.temperature == 0.0 and args.top_p != 1.0:
+        print("temperature=0: overriding top_p to the neutral value 1.0.")
+        args.top_p = 1.0
+
     return args
+
+
+def package_version(package_name: str) -> str:
+    """Return an installed package version without failing when the package is absent."""
+    try:
+        return importlib_metadata.version(package_name)
+    except importlib_metadata.PackageNotFoundError:
+        return "not_installed"
+
+
+def configure_reproducibility(seed: int, deterministic_algorithms: bool) -> None:
+    """Seed available RNGs and optionally request deterministic PyTorch algorithms."""
+    random.seed(seed)
+    torch.manual_seed(seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(seed)
+    if hasattr(torch.backends, "cudnn"):
+        torch.backends.cudnn.benchmark = False
+    if deterministic_algorithms:
+        torch.use_deterministic_algorithms(True, warn_only=True)
+
+
+
+def gpu_description() -> str:
+    if not torch.cuda.is_available():
+        return "cpu"
+    names = [torch.cuda.get_device_name(i) for i in range(torch.cuda.device_count())]
+    return " | ".join(names)
+
+
+def local_runtime_metadata(args: argparse.Namespace) -> dict[str, Any]:
+    backend_package = "vllm" if args.backend == "vllm" else "transformers"
+    if args.backend == "vllm":
+        quantization = args.quantization or "none"
+    elif args.load_in_4bit:
+        quantization = "bitsandbytes_4bit"
+    elif args.load_in_8bit:
+        quantization = "bitsandbytes_8bit"
+    else:
+        quantization = "none"
+
+    return {
+        "backend": args.backend,
+        "backend_version": package_version(backend_package),
+        "torch_version": torch.__version__,
+        "transformers_version": package_version("transformers"),
+        "python_version": platform.python_version(),
+        "gpu": gpu_description(),
+        "dtype": args.dtype,
+        "quantization": quantization,
+        "temperature": args.temperature,
+        "top_p": args.top_p,
+        "do_sample": False if args.temperature == 0.0 else True,
+        "num_beams": 1,
+        "num_return_sequences": 1,
+        "max_output_tokens": args.max_new_tokens,
+        "seed": args.generation_seed,
+        "decoding_mode": "temperature_zero_requested" if args.temperature == 0.0 else "sampling_requested",
+        "thinking_mode": "disabled_requested" if args.disable_thinking else "enabled_or_model_default",
+    }
 
 
 def normalize_text_value(value: Any) -> str:
@@ -536,11 +644,12 @@ def build_transformers_model(args: argparse.Namespace) -> BaseLocalModel:
     print(f"Resolved model family: {family} (backend=transformers)")
 
     model_cls = get_transformers_class(family)
-    return model_cls(
+    model = model_cls(
         model_path=args.model_path,
         max_new_tokens=args.max_new_tokens,
         temperature=args.temperature,
         top_p=args.top_p,
+        generation_seed=args.generation_seed,
         dtype=args.dtype,
         device_map=args.device_map,
         trust_remote_code=args.trust_remote_code,
@@ -550,6 +659,7 @@ def build_transformers_model(args: argparse.Namespace) -> BaseLocalModel:
         load_in_8bit=args.load_in_8bit,
         disable_thinking=args.disable_thinking,
     )
+    return model
 
 
 def build_vllm_model(args: argparse.Namespace) -> BaseVLLMModel:
@@ -559,11 +669,12 @@ def build_vllm_model(args: argparse.Namespace) -> BaseVLLMModel:
     print(f"Resolved model family: {family} (backend=vllm)")
 
     model_cls = get_vllm_class(family)
-    return model_cls(
+    model = model_cls(
         model_path=args.model_path,
         max_new_tokens=args.max_new_tokens,
         temperature=args.temperature,
         top_p=args.top_p,
+        generation_seed=args.generation_seed,
         dtype=args.dtype,
         trust_remote_code=args.trust_remote_code,
         local_files_only=args.local_files_only,
@@ -573,6 +684,7 @@ def build_vllm_model(args: argparse.Namespace) -> BaseVLLMModel:
         quantization=args.quantization,
         disable_thinking=args.disable_thinking,
     )
+    return model
 
 
 # --------------------------------------------------------------------------- #
@@ -628,6 +740,7 @@ def run_transformers(
     resolved_model_path: str,
     records_by_key: dict[tuple[str, str, str], dict[str, Any]],
     pending_calls: list[tuple[pd.Series, str]],
+    runtime_metadata: dict[str, Any],
 ) -> None:
     model = build_transformers_model(args)
     consecutive_runtime_failures = 0
@@ -656,6 +769,7 @@ def run_transformers(
                 "variant_id": str(variant_id),
                 "model": args.model_alias,
                 "model_path": resolved_model_path,
+                **runtime_metadata,
                 "llm_score": "" if result.get("llm_score") is None else result.get("llm_score"),
                 "raw_response": result.get("raw_response"),
                 "error": "" if error is None else error,
@@ -676,6 +790,16 @@ def run_transformers(
                         "variant_id": record["variant_id"],
                         "model": args.model_alias,
                         "model_path": resolved_model_path,
+                        "runtime_metadata": runtime_metadata,
+                        "inference_parameters": {
+                            "temperature": args.temperature,
+                            "top_p": args.top_p,
+                            "do_sample": False if args.temperature == 0.0 else True,
+                            "num_beams": 1,
+                            "max_new_tokens": args.max_new_tokens,
+                            "seed": args.generation_seed,
+                            "thinking_mode": runtime_metadata["thinking_mode"],
+                        },
                         "attempts": record["attempts"],
                         "prompt": prompt,
                         "raw_response": result.get("raw_response"),
@@ -767,6 +891,7 @@ def run_vllm(
     resolved_model_path: str,
     records_by_key: dict[tuple[str, str, str], dict[str, Any]],
     pending_calls: list[tuple[pd.Series, str]],
+    runtime_metadata: dict[str, Any],
 ) -> None:
     model = build_vllm_model(args)
     consecutive_runtime_failures = 0
@@ -800,6 +925,7 @@ def run_vllm(
                     "variant_id": str(variant_id),
                     "model": args.model_alias,
                     "model_path": resolved_model_path,
+                    **runtime_metadata,
                     "llm_score": "" if result.get("llm_score") is None else result.get("llm_score"),
                     "raw_response": result.get("raw_response"),
                     "error": "" if error is None else error,
@@ -818,6 +944,16 @@ def run_vllm(
                             "variant_id": record["variant_id"],
                             "model": args.model_alias,
                             "model_path": resolved_model_path,
+                            "runtime_metadata": runtime_metadata,
+                            "inference_parameters": {
+                                "temperature": args.temperature,
+                                "top_p": args.top_p,
+                                "do_sample": False if args.temperature == 0.0 else True,
+                                "num_beams": 1,
+                                "max_new_tokens": args.max_new_tokens,
+                                "seed": args.generation_seed,
+                                "thinking_mode": runtime_metadata["thinking_mode"],
+                            },
                             "attempts": record["attempts"],
                             "prompt": prompt,
                             "raw_response": result.get("raw_response"),
@@ -843,6 +979,8 @@ def run_vllm(
 
 def run_assessment(args: argparse.Namespace) -> tuple[Path, Path, Path]:
     check_cuda_compatibility()
+    configure_reproducibility(args.generation_seed, args.deterministic_algorithms)
+    runtime_metadata = local_runtime_metadata(args)
 
     if args.text_col not in pd.read_csv(args.input_csv, nrows=1).columns:
         raise ValueError(f"Text column {args.text_col!r} was not found in {args.input_csv}")
@@ -852,9 +990,15 @@ def run_assessment(args: argparse.Namespace) -> tuple[Path, Path, Path]:
     records_by_key, pending_calls = prepare_pending_calls(df, args, csv_path)
 
     if args.backend == "vllm":
-        run_vllm(args, csv_path, jsonl_path, log_path, resolved_model_path, records_by_key, pending_calls)
+        run_vllm(
+            args, csv_path, jsonl_path, log_path, resolved_model_path,
+            records_by_key, pending_calls, runtime_metadata,
+        )
     else:
-        run_transformers(args, csv_path, jsonl_path, log_path, resolved_model_path, records_by_key, pending_calls)
+        run_transformers(
+            args, csv_path, jsonl_path, log_path, resolved_model_path,
+            records_by_key, pending_calls, runtime_metadata,
+        )
 
     write_results(csv_path, jsonl_path, list(records_by_key.values()))
     return csv_path, jsonl_path, log_path

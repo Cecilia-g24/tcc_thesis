@@ -11,8 +11,9 @@ Designed for resumable, auditable runs:
 - resume support: successful calls are skipped on rerun
 - failed/missing calls are retried by default
 - exponential backoff for rate limits and transient API errors
-- strict parsing/validation of integer scores in {0, 1, 2, 3, 4}
-- full interaction log (prompt, raw response, retry attempts)
+- responses are parsed and validated against integer scores in {0, 1, 2, 3, 4}
+- explicit, neutral decoding parameters and a default generation seed of 42
+- full interaction log (prompt, raw response, retry attempts, inference settings)
 
 Each --model gets its own subfolder under --output-dir (results.csv, results.jsonl,
 interaction_log.jsonl), so multiple API models can be run into the same output-dir
@@ -37,11 +38,14 @@ import datetime as dt
 import json
 import math
 import os
+import platform
 import random
 import re
 import time
 from pathlib import Path
 from typing import Any
+
+from importlib import metadata as importlib_metadata
 
 import pandas as pd
 from dotenv import load_dotenv
@@ -49,12 +53,13 @@ from openai import OpenAI
 from tqdm import tqdm
 
 from de_prompt_construction import VARIANTS, build_prompt
+from results_schema import CORE_RESULT_COLUMNS
 
 load_dotenv()
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_INPUT_CSV = REPO_ROOT / "data" / "data_clean" / "01_csvs_for_liwc_manual_input" / "full_dataset_de.csv"
-DEFAULT_OUTPUT_DIR = REPO_ROOT / "results" / "approach2" / "de_text_de_prompt_results"
+DEFAULT_OUTPUT_DIR = REPO_ROOT / "results" / "approach2" / "de_text_de_prompt_results" / "api_results"
 MODELS_CONFIG_PATH = REPO_ROOT / "configs" / "api_models.json"
 
 # Maps a provider name (as used in configs/api_models.json) to its env var names.
@@ -68,24 +73,25 @@ DEFAULT_TEXT_COL = "text"
 
 DEFAULT_MODEL = "qwen3-30b-a3b-instruct-2507"
 DEFAULT_TEMPERATURE = 0.0
+DEFAULT_TOP_P = 1.0
 DEFAULT_MAX_TOKENS = 1024
+DEFAULT_N = 1
+DEFAULT_PRESENCE_PENALTY = 0.0
+DEFAULT_FREQUENCY_PENALTY = 0.0
+DEFAULT_GENERATION_SEED = 42
 
 MAX_RETRIES = 8
 BASE_RETRY_DELAY_S = 10
 MAX_RETRY_DELAY_S = 300
 STOP_AFTER_CONSECUTIVE_RATE_LIMIT_FAILURES = 8
 
-RESULT_COLUMNS = [
-    "id",
-    "dimension",
-    "variant_id",
-    "model",
-    "llm_score",
-    "raw_response",
-    "error",
-    "attempts",
-    "average_score",
-    "timestamp",
+# Core columns (shared name/semantics with llm_assessment_local.py's RESULT_COLUMNS) plus
+# this script's own API-specific columns, appended after.
+RESULT_COLUMNS = CORE_RESULT_COLUMNS + [
+    "provider",
+    "n",
+    "presence_penalty",
+    "frequency_penalty",
 ]
 
 
@@ -103,8 +109,49 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--model", type=str, default=DEFAULT_MODEL,
                         help="Run only this model.")
-    parser.add_argument("--temperature", type=float, default=DEFAULT_TEMPERATURE)
+    parser.add_argument(
+        "--temperature",
+        type=float,
+        default=DEFAULT_TEMPERATURE,
+        help="Requested API temperature. The default 0.0 requests deterministic/greedy-like decoding, "
+             "but exact behavior remains provider-dependent.",
+    )
+    parser.add_argument(
+        "--top-p",
+        type=float,
+        default=DEFAULT_TOP_P,
+        help="Nucleus-sampling cutoff. Kept at the neutral value 1.0 for temperature-zero benchmark runs.",
+    )
     parser.add_argument("--max-tokens", type=int, default=DEFAULT_MAX_TOKENS)
+    parser.add_argument(
+        "--seed",
+        type=int,
+        default=DEFAULT_GENERATION_SEED,
+        help="Generation seed sent to the provider when supported (default: 42).",
+    )
+    parser.add_argument(
+        "--no-seed",
+        dest="seed",
+        action="store_const",
+        const=None,
+        help="Do not send a seed, for providers or models that reject the seed parameter.",
+    )
+    parser.add_argument(
+        "--thinking-mode",
+        choices=["provider-default", "disabled", "enabled"],
+        default="disabled",
+        help="Thinking/reasoning control. 'disabled' (default) or 'enabled' sends the common "
+             "vLLM-compatible chat_template_kwargs.enable_thinking flag, matching "
+             "llm_assessment_local.py's --disable-thinking default; use provider-default if the "
+             "model/provider rejects that field.",
+    )
+    parser.add_argument(
+        "--extra-body-json",
+        type=str,
+        default=None,
+        help="Optional JSON object merged into the OpenAI-compatible request's extra_body. "
+             "Use this for provider/model-specific controls.",
+    )
     parser.add_argument("--overwrite", action="store_true",
                         help="Ignore existing result files and start a fresh run.")
     parser.add_argument("--keep-failed", action="store_true",
@@ -120,6 +167,29 @@ def parse_args() -> argparse.Namespace:
         if unknown:
             parser.error(f"Unknown --variants {unknown}; choices are {sorted(VARIANTS)}.")
         args.variants = requested
+
+    if args.temperature < 0:
+        parser.error("--temperature must be >= 0.")
+    if not 0 < args.top_p <= 1:
+        parser.error("--top-p must be in the interval (0, 1].")
+    if args.max_tokens <= 0:
+        parser.error("--max-tokens must be positive.")
+
+    # top_p has no useful role in a temperature-zero benchmark. Normalizing it makes the
+    # intended decoding configuration explicit and comparable across local/API scripts.
+    if args.temperature == 0.0 and args.top_p != 1.0:
+        print("temperature=0: overriding top_p to the neutral value 1.0.")
+        args.top_p = 1.0
+
+    if args.extra_body_json:
+        try:
+            args.extra_body = json.loads(args.extra_body_json)
+        except json.JSONDecodeError as exc:
+            parser.error(f"--extra-body-json is not valid JSON: {exc}")
+        if not isinstance(args.extra_body, dict):
+            parser.error("--extra-body-json must decode to a JSON object.")
+    else:
+        args.extra_body = {}
 
     return args
 
@@ -146,6 +216,52 @@ def make_client(provider_name: str) -> OpenAI:
     if not base_url:
         raise RuntimeError(f"Missing {env['base_url']} in environment or .env file.")
     return OpenAI(api_key=api_key, base_url=base_url, timeout=120.0)
+
+
+def package_version(package_name: str) -> str:
+    """Return an installed package version without making the run fail if unavailable."""
+    try:
+        return importlib_metadata.version(package_name)
+    except importlib_metadata.PackageNotFoundError:
+        return "unknown"
+
+
+def build_api_request_parameters(args: argparse.Namespace) -> tuple[dict[str, Any], str]:
+    """Build explicit neutral decoding parameters plus optional provider-specific controls."""
+    request: dict[str, Any] = {
+        "temperature": args.temperature,
+        "top_p": args.top_p,
+        "max_tokens": args.max_tokens,
+        "n": DEFAULT_N,
+        "presence_penalty": DEFAULT_PRESENCE_PENALTY,
+        "frequency_penalty": DEFAULT_FREQUENCY_PENALTY,
+    }
+    if args.seed is not None:
+        request["seed"] = args.seed
+
+    extra_body = dict(args.extra_body)
+    if args.thinking_mode != "provider-default":
+        chat_template_kwargs = dict(extra_body.get("chat_template_kwargs", {}))
+        chat_template_kwargs["enable_thinking"] = args.thinking_mode == "enabled"
+        extra_body["chat_template_kwargs"] = chat_template_kwargs
+
+    if extra_body:
+        request["extra_body"] = extra_body
+
+    thinking_label = (
+        "provider_default_no_explicit_control"
+        if args.thinking_mode == "provider-default"
+        else f"{args.thinking_mode}_requested"
+    )
+    return request, thinking_label
+
+
+def api_runtime_metadata() -> dict[str, str]:
+    return {
+        "backend": "openai_compatible_rest",
+        "openai_sdk_version": package_version("openai"),
+        "python_version": platform.python_version(),
+    }
 
 
 def normalize_text_value(value: Any) -> str:
@@ -257,7 +373,7 @@ def backoff_delay(attempt: int, is_rate_limit: bool) -> float:
     return delay + jitter
 
 
-def call_model(client: OpenAI, prompt: str, model: str, temperature: float, max_tokens: int) -> dict[str, Any]:
+def call_model(client: OpenAI, prompt: str, model: str, request_parameters: dict[str, Any]) -> dict[str, Any]:
     """Send one prompt to the model and return raw response, parse status, and a per-attempt log."""
     result: dict[str, Any] = {
         "raw_response": None,
@@ -280,11 +396,11 @@ def call_model(client: OpenAI, prompt: str, model: str, temperature: float, max_
             "retry_delay_seconds": None,
         }
         try:
+            # Every retry uses the identical model, prompt, and inference parameters.
             response = client.chat.completions.create(
                 model=model,
                 messages=[{"role": "user", "content": prompt}],
-                temperature=temperature,
-                max_tokens=max_tokens,
+                **request_parameters,
             )
             attempt_record["duration_seconds"] = round(time.perf_counter() - attempt_t0, 3)
             result["attempt_log"].append(attempt_record)
@@ -402,6 +518,8 @@ def prepare_pending_calls(
 def run_assessment(args: argparse.Namespace, model: str) -> tuple[Path, Path, Path]:
     provider_name = load_model_provider_map().get(model, DEFAULT_PROVIDER)
     client = make_client(provider_name)
+    request_parameters, thinking_mode = build_api_request_parameters(args)
+    runtime_metadata = api_runtime_metadata()
 
     if args.text_col not in pd.read_csv(args.input_csv, nrows=1).columns:
         raise ValueError(f"Text column {args.text_col!r} was not found in {args.input_csv}")
@@ -425,8 +543,7 @@ def run_assessment(args: argparse.Namespace, model: str) -> tuple[Path, Path, Pa
                 client=client,
                 prompt=prompt,
                 model=model,
-                temperature=args.temperature,
-                max_tokens=args.max_tokens,
+                request_parameters=request_parameters,
             )
 
             timestamp = dt.datetime.now().isoformat(timespec="seconds")
@@ -441,6 +558,17 @@ def run_assessment(args: argparse.Namespace, model: str) -> tuple[Path, Path, Pa
                 "dimension": str(row["dimension"]),
                 "variant_id": str(variant_id),
                 "model": model,
+                "provider": provider_name,
+                "backend": runtime_metadata["backend"],
+                "temperature": args.temperature,
+                "top_p": args.top_p,
+                "max_output_tokens": args.max_tokens,
+                "n": DEFAULT_N,
+                "presence_penalty": DEFAULT_PRESENCE_PENALTY,
+                "frequency_penalty": DEFAULT_FREQUENCY_PENALTY,
+                "seed": "" if args.seed is None else args.seed,
+                "decoding_mode": "temperature_zero_requested" if args.temperature == 0.0 else "sampling_requested",
+                "thinking_mode": thinking_mode,
                 "llm_score": "" if result.get("llm_score") is None else result.get("llm_score"),
                 "raw_response": result.get("raw_response"),
                 "error": "" if error is None else error,
@@ -461,6 +589,10 @@ def run_assessment(args: argparse.Namespace, model: str) -> tuple[Path, Path, Pa
                 "variant_id": record["variant_id"],
                 "model": model,
                 "provider": provider_name,
+                "runtime_metadata": runtime_metadata,
+                "inference_parameters": request_parameters,
+                "decoding_mode": record["decoding_mode"],
+                "thinking_mode": thinking_mode,
                 "attempts": record["attempts"],
                 "attempt_log": result.get("attempt_log"),
                 "prompt": prompt,
